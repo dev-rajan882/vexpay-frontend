@@ -1,0 +1,580 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>VEX PAY — Gateway Operations Dashboard</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: #121a2d;
+      --panel2: #18233a;
+      --line: #27334c;
+      --text: #edf3ff;
+      --muted: #8fa0bd;
+      --blue: #6d8cff;
+      --green: #28c995;
+      --amber: #f2b84b;
+      --red: #ff6b79;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 13px Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Arial, sans-serif;
+    }
+    button, input, select { font: inherit; }
+    button {
+      cursor: pointer;
+      border: 0;
+      border-radius: 8px;
+      padding: 8px 14px;
+      background: var(--blue);
+      color: white;
+      font-weight: 650;
+      transition: opacity 0.15s;
+    }
+    button:hover { opacity: 0.9; }
+    button.secondary { background: #26344f; }
+    button.danger { background: #882b3d; }
+    button.danger:hover { background: #a5344a; }
+    .shell { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
+    .side { background: #0e1628; border-right: 1px solid var(--line); padding: 24px 16px; }
+    .brand { font-size: 21px; font-weight: 850; letter-spacing: 1.5px; margin: 4px 10px 30px; }
+    .brand span { color: var(--blue); }
+    .nav { display: grid; gap: 7px; }
+    .nav button, .nav a button { width: 100%; text-align: left; background: transparent; color: #a9b7d0; font-weight: 600; }
+    .nav button.active, .nav button:hover, .nav a button:hover { background: #1b2944; color: white; }
+    .main { padding: 24px; min-width: 0; }
+    .top { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 22px; }
+    .top h1 { font-size: 24px; margin: 0; }
+    .muted { color: var(--muted); }
+    .pill { border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px; color: var(--muted); font-size: 12px; }
+    .dot { display: inline-block; width: 7px; height: 7px; background: var(--green); border-radius: 50%; margin-right: 7px; }
+    .cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-bottom: 18px; }
+    .card, .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 18px; }
+    .metric { font-size: 24px; font-weight: 800; margin-top: 6px; }
+    .label { color: var(--muted); font-size: 12px; }
+    .tablewrap { overflow-x: auto; margin-top: 10px; }
+    table { width: 100%; border-collapse: collapse; white-space: nowrap; }
+    th, td { text-align: left; padding: 10px 10px; border-bottom: 1px solid var(--line); font-size: 12px; }
+    th { color: var(--muted); font-weight: 600; background: #0f1627; }
+    .status { font-size: 11px; padding: 4px 8px; border-radius: 6px; background: #26344f; font-weight: 700; display: inline-block; }
+    .status.SUCCESS, .status.DELIVERED { color: #62e3b4; background: #123a35; }
+    .status.PENDING { color: #b7c8ff; }
+    .status.EXPIRED, .status.FAILED, .status.FAILED_NETWORK { color: #ff8792; background: #3b1b22; }
+    .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .small { font-size: 11px; }
+    .empty { padding: 25px; text-align: center; color: var(--muted); }
+    .hidden { display: none !important; }
+    .toolbar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+    .toolbar input, .toolbar select { background: #0d1526; border: 1px solid var(--line); border-radius: 8px; padding: 9px 12px; color: white; }
+    .appcard {
+      background: #0d1526;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 18px;
+      margin-bottom: 14px;
+    }
+    .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: grid; place-items: center; padding: 18px; z-index: 10; }
+    .modalbox { max-width: 540px; width: 100%; background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 22px; }
+    .modalbox input { width: 100%; margin: 6px 0 14px; background: #0d1526; border: 1px solid var(--line); border-radius: 8px; padding: 10px; color: white; }
+    .keybox { word-break: break-all; background: #070d18; padding: 10px 12px; border-radius: 8px; margin: 8px 0; color: #a8f0d6; font-family: monospace; border: 1px solid #1a2744; }
+    .qr-modal-img { display: block; margin: 14px auto; width: 220px; height: 220px; background: white; padding: 8px; border-radius: 12px; }
+  </style>
+</head>
+<body>
+<div class="shell">
+  <aside class="side">
+    <div class="brand">VEX <span>PAY</span></div>
+    <nav class="nav">
+      <button class="active" data-page="overview">▦ Overview</button>
+      <button data-page="orders">⇄ Orders & Transactions</button>
+      <button data-page="apps">▣ Applications</button>
+      <button data-page="events">⌁ Webhooks</button>
+      <button data-page="logs">☷ Activity Logs</button>
+      <button data-page="settings">⚙ Settings</button>
+      <a href="/docs" target="_blank" style="text-decoration: none;">
+        <button type="button">⌘ Documentation ↗</button>
+      </a>
+    </nav>
+  </aside>
+
+  <main class="main">
+    <header class="top">
+      <div>
+        <h1 id="title">Dashboard Overview</h1>
+        <div class="muted small">Auto Direct SUCCESS · Duplicate Filter Active · Full App Controls</div>
+      </div>
+      <div class="actions">
+        <span class="pill" id="gmailState">● Gmail not connected</span>
+        <button class="secondary" id="connectBtn">Connect Gmail</button>
+        <button class="secondary" id="syncBtn">Sync Now</button>
+      </div>
+    </header>
+
+    <!-- OVERVIEW -->
+    <section id="page-overview">
+      <div class="cards">
+        <div class="card">
+          <div class="label">Total Processed Value</div>
+          <div class="metric" id="totalValue">₹0.00</div>
+        </div>
+        <div class="card">
+          <div class="label">Total Orders</div>
+          <div class="metric" id="totalOrders">0</div>
+        </div>
+        <div class="card">
+          <div class="label">Auto-Verified SUCCESS</div>
+          <div class="metric" style="color:#28c995;" id="verifiedCount">0</div>
+        </div>
+        <div class="card">
+          <div class="label">Dynamic Slot Pool</div>
+          <div class="metric" style="color:#6d8cff;">0.01 – 0.30</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Live Transactions</h2>
+        <div class="tablewrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Order ID</th>
+                <th>App</th>
+                <th>App Order ID</th>
+                <th>Payable (Slot)</th>
+                <th>UTR / Txn ID</th>
+                <th>Status</th>
+                <th>Created</th>
+              </tr>
+            </thead>
+            <tbody id="recentRows"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- DETAILED ORDERS TABLE -->
+    <section id="page-orders" class="hidden">
+      <div class="toolbar">
+        <input id="orderSearch" placeholder="Search Order ID, App Order ID, UTR, Txn ID, Email..." style="min-width: 320px;" />
+        <select id="orderStatus">
+          <option value="">All statuses</option>
+          <option>SUCCESS</option>
+          <option>PENDING</option>
+          <option>EXPIRED</option>
+        </select>
+        <button class="secondary" id="csvBtn">Export CSV</button>
+      </div>
+
+      <div class="panel">
+        <h2>All Orders (Comprehensive Details)</h2>
+        <div class="tablewrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Order ID</th>
+                <th>App</th>
+                <th>App Order ID</th>
+                <th>Email Order ID</th>
+                <th>Base Amt</th>
+                <th>Payable Amt</th>
+                <th>Slot</th>
+                <th>UTR No.</th>
+                <th>Txn ID</th>
+                <th>Bank / Sender Email</th>
+                <th>Status</th>
+                <th>Created At</th>
+                <th>Verified At</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="orderRows"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- APPLICATIONS -->
+    <section id="page-apps" class="hidden">
+      <div class="panel">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+          <div>
+            <h2>Registered Applications</h2>
+            <div class="muted small">Manage API keys, Webhook URLs, Webhook Secrets, and app status</div>
+          </div>
+          <button id="addApp">＋ Register New App</button>
+        </div>
+        <div id="appList"></div>
+      </div>
+    </section>
+
+    <!-- WEBHOOKS -->
+    <section id="page-events" class="hidden">
+      <div class="panel">
+        <h2>Webhook Dispatch History</h2>
+        <div class="tablewrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Event ID</th>
+                <th>Type</th>
+                <th>App ID</th>
+                <th>Status</th>
+                <th>Dispatched At</th>
+              </tr>
+            </thead>
+            <tbody id="eventRows"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- LOGS -->
+    <section id="page-logs" class="hidden">
+      <div class="panel">
+        <h2>Activity Logs</h2>
+        <div id="logList"></div>
+      </div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section id="page-settings" class="hidden">
+      <div class="panel">
+        <h2>Gmail Connection</h2>
+        <p id="gmailDetails" class="muted">Checking connection status...</p>
+        <button id="connectBtn2" style="margin-top:12px;">Connect Gmail Account</button>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- MODAL -->
+<div id="modal" class="modal hidden">
+  <div class="modalbox" id="modalContent"></div>
+</div>
+
+<script>
+let state = { apps: [], orders: [], events: [], logs: [], gmail: { connected: false } };
+let adminKey = sessionStorage.getItem('vexAdminKey') || '';
+
+const $ = id => document.getElementById(id);
+const money = n => '₹' + Number(n || 0).toFixed(2);
+const dt = s => s ? new Date(typeof s === 'number' ? s : s).toLocaleString() : '—';
+
+async function api(url, opts = {}) {
+  const r = await fetch(url, {
+    ...opts,
+    headers: { 'content-type': 'application/json', 'x-dashboard-admin-key': adminKey, ...(opts.headers || {}) }
+  });
+  const d = await r.json().catch(() => ({}));
+  if (r.status === 401) throw new Error('Dashboard admin key required');
+  if (!r.ok) throw new Error(d.error || 'Request failed');
+  return d;
+}
+
+// Instant Cache Loader
+function loadCachedState() {
+  const cached = localStorage.getItem('vex_cached_dashboard');
+  if (cached) {
+    try {
+      state = JSON.parse(cached);
+      render();
+    } catch(e) {}
+  }
+}
+
+async function refresh() {
+  try {
+    const data = await api('/api/dashboard');
+    if (data && typeof data === 'object') {
+      state = data;
+      localStorage.setItem('vex_cached_dashboard', JSON.stringify(data));
+      render();
+    }
+  } catch(e) {
+    if (e.message.includes('admin key')) {
+      const k = prompt('Enter DASHBOARD_ADMIN_KEY:');
+      if (k !== null) {
+        adminKey = k;
+        sessionStorage.setItem('vexAdminKey', k);
+        refresh();
+      }
+    }
+  }
+}
+
+function render() {
+  const orders = state.orders || [];
+  const paid = orders.filter(o => o.status === 'SUCCESS');
+
+  $('totalValue').textContent = money(orders.reduce((s, o) => s + Number(o.payableAmount || 0), 0));
+  $('totalOrders').textContent = orders.length;
+  $('verifiedCount').textContent = paid.length;
+  $('gmailState').innerHTML = (state.gmail && state.gmail.connected) 
+    ? '<span class="dot"></span> Gmail connected' 
+    : '● Gmail not connected';
+
+  $('gmailDetails').textContent = (state.gmail && state.gmail.connected)
+    ? 'Gmail read-only sync connected. Background scans run every 1 minute.'
+    : 'Gmail is not connected. Connect your Google account to auto-detect Paytm emails.';
+
+  // Recent rows
+  $('recentRows').innerHTML = orders.slice(0, 8).map(o => `
+    <tr>
+      <td><strong>${o.orderId}</strong></td>
+      <td>${o.appName || 'Apex Gaming'}</td>
+      <td>${o.appOrderId || o.orderId}</td>
+      <td><strong>${money(o.payableAmount)}</strong> <span class="muted small">(Slot ${o.slotIndex || 1})</span></td>
+      <td>${o.utr || o.transactionId || '—'}</td>
+      <td><span class="status ${o.status}">${o.status}</span></td>
+      <td>${dt(o.createdAtMs || o.createdAt)}</td>
+    </tr>
+  `).join('') || '<tr><td colspan="7" class="empty">No orders yet</td></tr>';
+
+  // Comprehensive Detailed Orders List
+  const q = ($('orderSearch')?.value || '').toLowerCase();
+  const filter = $('orderStatus')?.value || '';
+
+  $('orderRows').innerHTML = orders.filter(o => (!filter || o.status === filter) && JSON.stringify(o).toLowerCase().includes(q)).map(o => `
+    <tr>
+      <td><strong>${o.orderId}</strong></td>
+      <td>${o.appName || 'Apex Gaming'}</td>
+      <td>${o.appOrderId || o.orderId}</td>
+      <td>${o.emailOrderId || '—'}</td>
+      <td>${money(o.originalAmount || o.payableAmount)}</td>
+      <td style="color:#6d8cff; font-weight:700;">${money(o.payableAmount)}</td>
+      <td>Slot ${o.slotIndex || 1}</td>
+      <td><strong style="color:#28c995;">${o.utr || '—'}</strong></td>
+      <td>${o.transactionId || '—'}</td>
+      <td>${o.bankEmailId || o.sender || '—'}</td>
+      <td><span class="status ${o.status}">${o.status}</span></td>
+      <td>${dt(o.createdAtMs || o.createdAt)}</td>
+      <td>${dt(o.verifiedAtMs || o.verifiedAt)}</td>
+      <td>
+        <button class="secondary small" onclick="viewOrderQR('${o.orderId}')">View QR</button>
+      </td>
+    </tr>
+  `).join('') || '<tr><td colspan="14" class="empty">No matching orders found</td></tr>';
+
+  // Applications List
+  $('appList').innerHTML = (state.apps || []).map(a => `
+    <div class="appcard">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
+        <div>
+          <strong style="font-size:16px;">${a.name}</strong>
+          ${a.active ? '<span class="status SUCCESS" style="margin-left:8px;">ACTIVE</span>' : '<span class="status EXPIRED" style="margin-left:8px;">DISABLED</span>'}
+        </div>
+        <div class="muted small">App ID: <code>${a.id}</code> · Created ${dt(a.createdAt)}</div>
+      </div>
+
+      <div style="margin: 8px 0;">
+        <div class="muted small">API Key: <code style="color:#a8f0d6;">${a.apiKeyHint}</code></div>
+        <div class="muted small" style="margin-top:4px;">
+          Webhook Secret: <code style="color:#fde68a;">${a.webhookSecret ? a.webhookSecret : '(Configured/Hidden)'}</code>
+          ${a.webhookSecret ? `<button class="secondary small" style="margin-left:6px; padding:2px 8px;" onclick="navigator.clipboard.writeText('${a.webhookSecret}'); alert('Webhook Secret copied!');">Copy Secret</button>` : ''}
+        </div>
+        <div class="muted small" style="margin-top:4px;">Webhook URL: <code>${a.webhookUrl || 'Not configured'}</code></div>
+      </div>
+
+      <div class="actions" style="margin-top:14px;">
+        <button class="secondary small" onclick="editWebhook('${a.id}')">✏️ Edit Webhook</button>
+        <button class="secondary small" onclick="toggleApp('${a.id}', ${!a.active})">${a.active ? '⏸️ Disable App' : '▶️ Enable App'}</button>
+        <button class="secondary small" onclick="rotateCredentials('${a.id}')">🔄 Rotate API Key & Secret</button>
+        <button class="danger small" onclick="deleteApp('${a.id}')">🗑️ Delete App</button>
+      </div>
+    </div>
+  `).join('') || '<div class="empty">No applications registered yet. Click "＋ Register New App" to get started.</div>';
+
+  // Webhook Events
+  $('eventRows').innerHTML = (state.events || []).slice(0, 50).map(e => {
+    const eventId = e.eventId || e.id;
+    const appId = e.appId || e.app_id || 'APEX_GAMING_01';
+    const status = e.deliveryStatus || e.delivery_status || e.status || 'DELIVERED';
+    const time = e.dispatchedAt || e.dispatched_at || e.createdAt || e.timestamp;
+
+    return `
+      <tr>
+        <td><strong>${eventId}</strong></td>
+        <td>${e.type || 'payment.success'}</td>
+        <td>${appId}</td>
+        <td><span class="status ${status}">${status}</span></td>
+        <td>${dt(time)}</td>
+      </tr>
+    `;
+  }).join('') || '<tr><td colspan="5" class="empty">No webhooks dispatched yet</td></tr>';
+
+  // Logs
+  $('logList').innerHTML = (state.logs || []).slice(0, 50).map(l => `
+    <div style="background:#0b1120; border:1px solid var(--line); border-radius:8px; padding:8px 12px; margin-bottom:6px;">
+      <strong>${(l.type || 'INFO').toUpperCase()}: ${l.message}</strong>
+      <div class="muted small">${dt(l.at)}</div>
+    </div>
+  `).join('') || '<div class="empty">No activity logs</div>';
+}
+
+function page(name) {
+  document.querySelectorAll('[id^="page-"]').forEach(e => e.classList.add('hidden'));
+  $('page-' + name).classList.remove('hidden');
+  document.querySelectorAll('[data-page]').forEach(b => b.classList.toggle('active', b.dataset.page === name));
+  $('title').textContent = ({
+    overview: 'Dashboard Overview',
+    orders: 'Orders & Transactions',
+    apps: 'Applications',
+    events: 'Webhook Events',
+    logs: 'Activity Logs',
+    settings: 'Settings'
+  })[name];
+}
+
+document.querySelectorAll('[data-page]').forEach(b => b.onclick = () => page(b.dataset.page));
+$('connectBtn').onclick = $('connectBtn2').onclick = () => location.href = '/auth/google';
+
+$('syncBtn').onclick = async () => { 
+  const btn = $('syncBtn');
+  btn.textContent = 'Syncing...';
+  btn.disabled = true;
+  try {
+    await fetch('/api/sync').catch(() => {});
+    await refresh();
+  } finally {
+    btn.textContent = 'Sync Now';
+    btn.disabled = false;
+  }
+};
+
+$('orderSearch').oninput = render;
+$('orderStatus').onchange = render;
+
+// CREATE APP MODAL
+$('addApp').onclick = () => {
+  $('modalContent').innerHTML = `
+    <h2>Register Application</h2>
+    <p class="muted small">Generate dedicated API Key and Webhook Secret for your client app.</p>
+    <label class="small muted">Application Name</label>
+    <input id="newName" placeholder="My Gaming Store" />
+    <label class="small muted">Webhook URL (Optional)</label>
+    <input id="newHook" placeholder="http://localhost:4000/api/webhook/payment" />
+    <div class="actions">
+      <button id="createAppBtn">Create App & Credentials</button>
+      <button class="secondary" onclick="closeModal()">Cancel</button>
+    </div>
+  `;
+  $('modal').classList.remove('hidden');
+
+  $('createAppBtn').onclick = async () => {
+    try {
+      const d = await api('/api/admin/apps', {
+        method: 'POST',
+        body: JSON.stringify({ name: $('newName').value, webhookUrl: $('newHook').value })
+      });
+      $('modalContent').innerHTML = `
+        <h2>Application Created!</h2>
+        <p class="muted small">Copy these credentials now. Store them in your client app's environment variables:</p>
+        <label class="small muted">API Key</label>
+        <div class="keybox">${d.apiKey}</div>
+        <button onclick="navigator.clipboard.writeText('${d.apiKey}'); alert('API Key copied!');">Copy API Key</button>
+
+        <label class="small muted" style="margin-top:12px; display:block;">Webhook Secret</label>
+        <div class="keybox">${d.webhookSecret}</div>
+        <button class="secondary" onclick="navigator.clipboard.writeText('${d.webhookSecret}'); alert('Webhook Secret copied!');">Copy Webhook Secret</button>
+
+        <div style="margin-top:16px;">
+          <button class="secondary" onclick="closeModal(); refresh();">Done</button>
+        </div>
+      `;
+      refresh();
+    } catch(e) { alert(e.message); }
+  };
+};
+
+window.editWebhook = async (appId) => {
+  const a = state.apps.find(x => x.id === appId);
+  const u = prompt('Enter new Webhook URL:', a?.webhookUrl || '');
+  if (u === null) return;
+  try {
+    await api('/api/admin/apps/' + appId + '/webhook', { method: 'PUT', body: JSON.stringify({ webhookUrl: u.trim() }) });
+    refresh();
+  } catch(e) { alert(e.message); }
+};
+
+window.toggleApp = async (appId, active) => {
+  try {
+    await api('/api/admin/apps/' + appId + '/status', { method: 'PUT', body: JSON.stringify({ active }) });
+    refresh();
+  } catch(e) { alert(e.message); }
+};
+
+window.rotateCredentials = async (appId) => {
+  const a = state.apps.find(x => x.id === appId);
+  if (!a || !confirm(`Rotate credentials for ${a.name}? The old API key and webhook secret will stop working immediately.`)) return;
+  try {
+    const d = await api('/api/admin/apps/' + appId + '/rotate-credentials', { method: 'POST', body: '{}' });
+    $('modalContent').innerHTML = `
+      <h2>New Credentials Generated</h2>
+      <p class="muted small">Update your server configuration with the new keys immediately:</p>
+      <label class="small muted">New API Key</label>
+      <div class="keybox">${d.apiKey}</div>
+      <button onclick="navigator.clipboard.writeText('${d.apiKey}'); alert('Copied API Key!');">Copy API Key</button>
+
+      <label class="small muted" style="margin-top:12px; display:block;">New Webhook Secret</label>
+      <div class="keybox">${d.webhookSecret}</div>
+      <button class="secondary" onclick="navigator.clipboard.writeText('${d.webhookSecret}'); alert('Copied Webhook Secret!');">Copy Webhook Secret</button>
+
+      <div style="margin-top:16px;">
+        <button class="secondary" onclick="closeModal(); refresh();">Done</button>
+      </div>
+    `;
+    $('modal').classList.remove('hidden');
+    refresh();
+  } catch(e) { alert(e.message); }
+};
+
+window.deleteApp = async (appId) => {
+  const a = state.apps.find(x => x.id === appId);
+  if (!a || !confirm(`Are you sure you want to delete ${a.name}? Its API key will be revoked immediately.`)) return;
+  try {
+    await api('/api/admin/apps/' + appId, { method: 'DELETE' });
+    refresh();
+    alert('Application deleted successfully.');
+  } catch(e) { alert(e.message); }
+};
+
+window.closeModal = () => $('modal').classList.add('hidden');
+
+window.viewOrderQR = (orderId) => {
+  const o = state.orders.find(x => x.orderId === orderId);
+  if (!o) return;
+  $('modalContent').innerHTML = `
+    <h2>Order Payment QR</h2>
+    <div style="text-align:center; margin:16px 0;">
+      <div style="font-size:24px; font-weight:800; color:#6d8cff;">Exact: ₹${o.payableAmount}</div>
+      <div class="muted small">Slot ${o.slotIndex || 1} · Order: ${o.orderId}</div>
+      <img src="${o.qrImageUrl}" class="qr-modal-img" alt="QR Code" />
+      <div class="keybox" style="font-size:11px; margin-top:10px;">${o.upiIntentUrl}</div>
+    </div>
+    <button class="secondary" onclick="closeModal()" style="width:100%;">Close</button>
+  `;
+  $('modal').classList.remove('hidden');
+};
+
+$('csvBtn').onclick = async () => {
+  try {
+    const r = await fetch('/api/orders.csv', { headers: { 'x-dashboard-admin-key': adminKey } });
+    const blob = await r.blob();
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'vex-pay-orders.csv';
+    a.click();
+  } catch(e) { alert(e.message); }
+};
+
+// Start Instant Cache
+loadCachedState();
+refresh();
+setInterval(refresh, 10000);
+</script>
+</body>
+</html>

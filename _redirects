@@ -1,0 +1,3 @@
+/api/*  https://vexpay-seven.vercel.app/api/:splat  200
+/auth/* https://vexpay-seven.vercel.app/auth/:splat 200
+/oauth2callback https://vexpay-seven.vercel.app/oauth2callback 200

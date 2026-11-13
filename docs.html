@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VEX PAY — Developer & AI Integration Guide</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: #121a2d;
+      --line: #27334c;
+      --text: #edf3ff;
+      --muted: #8fa0bd;
+      --blue: #6d8cff;
+      --green: #28c995;
+      --code-bg: #080d1a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 14px/1.6 Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Arial, sans-serif;
+    }
+    header {
+      background: #0e1628;
+      border-bottom: 1px solid var(--line);
+      padding: 16px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .brand { font-size: 20px; font-weight: 850; letter-spacing: 1.5px; }
+    .brand span { color: var(--blue); }
+    .back-btn {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 8px 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      transition: all 0.2s;
+    }
+    .back-btn:hover { background: #1b2944; color: white; }
+    .layout {
+      max-width: 1050px;
+      margin: 40px auto;
+      padding: 0 20px 80px;
+    }
+    h1 { font-size: 28px; margin-bottom: 8px; color: white; }
+    h2 { font-size: 20px; margin-top: 36px; margin-bottom: 12px; color: var(--blue); border-bottom: 1px solid var(--line); padding-bottom: 8px; }
+    h3 { font-size: 15px; margin-top: 20px; margin-bottom: 8px; color: white; }
+    p, li { color: var(--muted); }
+    ul { padding-left: 20px; margin: 8px 0; }
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: bold;
+      background: #1e2c4a;
+      color: var(--blue);
+      margin-bottom: 20px;
+    }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 20px;
+      margin: 18px 0;
+    }
+    .code-container {
+      position: relative;
+      margin: 12px 0 20px;
+    }
+    pre {
+      background: var(--code-bg);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 16px;
+      overflow-x: auto;
+      color: #9cdcfe;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 13px;
+      line-height: 1.5;
+      margin: 0;
+    }
+    .copy-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: #1e2c4a;
+      border: 1px solid var(--line);
+      color: var(--text);
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .copy-btn:hover { background: var(--blue); color: white; }
+    table { width: 100%; border-collapse: collapse; margin: 14px 0; }
+    th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); font-size: 13px; }
+    th { color: white; background: #0e1628; }
+    code { background: #070d18; color: #a8f0d6; padding: 2px 6px; border-radius: 4px; font-family: monospace; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="brand">VEX <span>PAY</span> DOCS</div>
+  <a href="/" class="back-btn">← Back to Dashboard</a>
+</header>
+
+<div class="layout">
+  <h1>Gateway Integration Manual</h1>
+  <div class="badge">Designed for Developers & AI Prompt Engineering</div>
+  <p>VexPay uses dynamic paise slotting (0.01 – 0.30) to match incoming bank payment emails with orders in real-time. Follow the contracts below to connect your checkout.</p>
+
+  <!-- Section 1 -->
+  <h2>1. Authentication & Base URL</h2>
+  <p>All merchant API calls require your application's API Key. The Gateway auto-detects its current host URL:</p>
+  <div class="card">
+    <div><strong>Target Base URL:</strong> <code id="baseUrlDisplay">Detecting...</code></div>
+    <div style="margin-top: 8px;"><strong>Header Required:</strong> <code>x-vex-api-key: YOUR_APP_API_KEY</code></div>
+  </div>
+
+  <!-- Section 2 -->
+  <h2>2. Create Payment Order (Website Backend &rarr; Gateway)</h2>
+  <p>Call this endpoint whenever a user clicks "Add Funds" or "Pay Now" on your website.</p>
+  <p><code>POST /api/v1/orders</code></p>
+
+  <div class="code-container">
+    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+    <pre><code>// Example Node.js Backend Route
+const response = await fetch(`${GATEWAY_URL}/api/v1/orders`, {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    "x-vex-api-key": process.env.VEX_API_KEY
+  },
+  body: JSON.stringify({
+    amount: 100,                     // Requested base amount
+    currency: "INR",
+    app_order_id: "ORD_" + Date.now(), // Unique order ID on your site
+    customer_id: "USER_101"
+  })
+});
+
+const data = await response.json();
+// data.order.payableAmount -> Exact amount to show user (e.g. 100.04)
+// data.order.qrImageUrl    -> Dynamic QR code image
+// data.order.upiIntentUrl  -> Mobile UPI app intent link
+// data.order.expiresAt     -> Order expiry timestamp (5-minute timer)</code></pre>
+  </div>
+
+  <!-- Section 3 -->
+  <h2>3. Webhook Listener (Gateway &rarr; Website Backend)</h2>
+  <p>When the customer pays the exact amount, VexPay verifies it via Paytm alerts and dispatches an instant signed POST webhook to your server.</p>
+
+  <div class="code-container">
+    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+    <pre><code>// Express.js Webhook Controller
+import express from 'express';
+import crypto from 'node:crypto';
+
+const app = express();
+const WEBHOOK_SECRET = process.env.VEX_WEBHOOK_SECRET;
+
+app.post('/api/webhook/payment', express.raw({ type: 'application/json' }), (req, res) => {
+  const signature = req.headers['x-vex-signature'];
+  const rawBody = req.body;
+
+  // 1. Verify HMAC Signature
+  const expectedSignature = 'sha256=' + crypto
+    .createHmac('sha256', WEBHOOK_SECRET)
+    .update(rawBody)
+    .digest('hex');
+
+  if (signature !== expectedSignature) {
+    return res.status(401).send('Invalid signature');
+  }
+
+  const event = JSON.parse(rawBody.toString('utf8'));
+
+  // 2. Handle verified payment
+  if (event.type === 'payment.success') {
+    const { app_order_id, base_amount, utr, transaction_id } = event.data;
+
+    // A. Check if already processed (Idempotency)
+    // B. Credit user's wallet with base_amount (e.g., 100.00, NOT 100.04)
+    // C. Mark order as SUCCESS in your database
+    console.log(`Payment confirmed for Order: ${app_order_id}, UTR: ${utr}`);
+  }
+
+  return res.status(200).send('OK');
+});</code></pre>
+  </div>
+
+  <!-- Section 4 -->
+  <h2>4. Check Order Status Fallback (Polling API)</h2>
+  <p>Your frontend or checkout UI can poll this endpoint every 3 seconds to auto-redirect users once payment completes.</p>
+  <p><code>GET /api/order-status?orderId={orderId}</code></p>
+
+  <div class="code-container">
+    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+    <pre><code>// Frontend Status Polling
+async function pollOrderStatus(orderId) {
+  const check = setInterval(async () => {
+    const res = await fetch(`${GATEWAY_URL}/api/order-status?orderId=${orderId}`);
+    const data = await res.json();
+
+    if (data.status === 'SUCCESS') {
+      clearInterval(check);
+      alert('Payment Verified! UTR: ' + data.utr);
+      window.location.href = '/payment-success';
+    } else if (data.status === 'EXPIRED') {
+      clearInterval(check);
+      alert('Payment window expired. Please initiate again.');
+    }
+  }, 3000);
+}</code></pre>
+  </div>
+
+  <!-- Section 5 -->
+  <h2>5. Critical Rules for Developers & AI Agents</h2>
+  <ul>
+    <li><strong>Credit the Base Amount:</strong> Always credit <code>base_amount</code> (₹100) to the user's wallet, never the slotted paise (₹100.04).</li>
+    <li><strong>5-Minute Lifetime:</strong> Orders and slots expire in 5 minutes. Never accept payments after expiration.</li>
+    <li><strong>Raw Body for Signature:</strong> Verify the HMAC signature against the raw, unparsed request buffer.</li>
+  </ul>
+</div>
+
+<script>
+  document.getElementById('baseUrlDisplay').textContent = window.location.origin;
+
+  function copyCode(btn) {
+    const code = btn.nextElementSibling.querySelector('code').innerText;
+    navigator.clipboard.writeText(code);
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = 'Copy', 2000);
+  }
+</script>
+</body>
+</html>
