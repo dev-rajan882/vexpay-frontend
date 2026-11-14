@@ -1,14 +1,579 @@
-You are integrating the VEX PAY UPI Payment Gateway into my application.
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VEX PAY — Complete Developer, Flutter & AI Integration Documentation</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #070b16;
+      --panel: #0f1629;
+      --panel-alt: #131c33;
+      --line: #1e2d4a;
+      --text: #edf3ff;
+      --muted: #94a3b8;
+      --blue: #6d8cff;
+      --green: #28c995;
+      --amber: #f59e0b;
+      --code-bg: #050811;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      overflow-x: hidden;
+    }
+    code, pre {
+      font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #070b16; }
+    ::-webkit-scrollbar-thumb { background: #1e2d4a; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #334b78; }
+    .tab-active {
+      background: rgba(109, 140, 255, 0.16);
+      color: #ffffff;
+      border-color: #6d8cff;
+    }
+    .nav-active {
+      background: rgba(109, 140, 255, 0.14);
+      color: #6d8cff;
+      border-left: 3px solid #6d8cff;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col bg-[#070b16] text-[#edf3ff]">
+
+  <!-- Top Sticky Header -->
+  <header class="sticky top-0 z-40 bg-[#0b1122]/95 backdrop-blur border-b border-[#1e2d4a] px-4 lg:px-8 py-3.5 flex flex-wrap items-center justify-between gap-3">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-[#6d8cff] to-[#28c995] flex items-center justify-center font-extrabold text-[#070b16] text-base shadow-lg">
+        VX
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="font-extrabold tracking-wider text-lg text-white">VEX <span class="text-[#6d8cff]">PAY</span></span>
+          <span class="text-[11px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#162340] text-[#28c995] border border-[#28c995]/30">v2.0 Live Docs</span>
+        </div>
+        <p class="text-xs text-slate-400 hidden sm:block">Human Developer &amp; AI Agent Integration Reference (Web, Node.js &amp; Flutter)</p>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-2.5 flex-wrap">
+      <button id="copyAiMasterBtn" type="button" class="px-3.5 py-2 rounded-lg text-xs font-semibold bg-gradient-to-r from-[#6d8cff] to-[#4f6ef7] hover:opacity-95 text-white shadow flex items-center gap-1.5 transition">
+        <span>🤖</span>
+        <span>Copy Full AI Master Prompt</span>
+      </button>
+      <button id="goDashboardBtn" type="button" class="px-3.5 py-2 rounded-lg text-xs font-semibold bg-[#131c33] hover:bg-[#1b2847] text-slate-200 border border-[#27395c] transition">
+        ← Dashboard
+      </button>
+    </div>
+  </header>
+
+  <!-- Live Credential & URL Customizer Bar -->
+  <section class="bg-[#0d1426] border-b border-[#1e2d4a] px-4 lg:px-8 py-3">
+    <div class="max-w-7xl mx-auto flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
+      <div class="flex items-center gap-2 text-xs text-slate-300">
+        <span class="inline-block w-2 h-2 rounded-full bg-[#28c995]"></span>
+        <span class="font-semibold text-white">Live Code Customizer:</span>
+        <span class="text-slate-400">Yahan apna Gateway URL aur API Key dalein — niche saare code snippets aur AI prompt apne aap update ho jayenge.</span>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 w-full lg:w-auto lg:min-w-[620px]">
+        <div>
+          <label for="cfgBaseUrl" class="block text-[10px] uppercase tracking-wider text-slate-400 mb-0.5">Gateway Base URL</label>
+          <input id="cfgBaseUrl" type="text" value="https://vexpay-seven.vercel.app" class="w-full px-2.5 py-1.5 rounded-lg bg-[#070b16] border border-[#27395c] text-xs text-white focus:outline-none focus:border-[#6d8cff]" />
+        </div>
+        <div>
+          <label for="cfgApiKey" class="block text-[10px] uppercase tracking-wider text-slate-400 mb-0.5">Merchant API Key (x-vex-api-key)</label>
+          <input id="cfgApiKey" type="text" value="vex_your_live_api_key_here" class="w-full px-2.5 py-1.5 rounded-lg bg-[#070b16] border border-[#27395c] text-xs text-[#28c995] font-mono focus:outline-none focus:border-[#6d8cff]" />
+        </div>
+        <div>
+          <label for="cfgWebhookSecret" class="block text-[10px] uppercase tracking-wider text-slate-400 mb-0.5">Webhook Secret</label>
+          <input id="cfgWebhookSecret" type="text" value="whsec_your_webhook_secret" class="w-full px-2.5 py-1.5 rounded-lg bg-[#070b16] border border-[#27395c] text-xs text-amber-300 font-mono focus:outline-none focus:border-[#6d8cff]" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Content Layout -->
+  <div class="max-w-7xl w-full mx-auto flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 px-4 lg:px-8 py-6">
+
+    <!-- Left Navigation Sidebar -->
+    <aside class="lg:col-span-3">
+      <div class="lg:sticky lg:top-20 bg-[#0f1629] border border-[#1e2d4a] rounded-2xl p-4 space-y-4">
+        <div>
+          <label for="docSearch" class="block text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Filter Documentation</label>
+          <input id="docSearch" type="text" placeholder="Search Flutter, Webhook, AI, QR..." class="w-full px-3 py-2 rounded-lg bg-[#070b16] border border-[#27395c] text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#6d8cff]" />
+        </div>
+
+        <nav id="sideNav" class="space-y-1 text-xs font-medium">
+          <button type="button" data-target="sec-overview" class="nav-btn nav-active w-full text-left px-3 py-2 rounded-r-lg transition flex items-center justify-between">
+            <span>1. Architecture &amp; Slot Logic</span>
+            <span class="text-[10px] text-slate-400">Core</span>
+          </button>
+          <button type="button" data-target="sec-ai-prompt" class="nav-btn w-full text-left px-3 py-2 rounded-r-lg text-slate-300 hover:bg-[#15203b] transition flex items-center justify-between">
+            <span>2. AI Agent Master Prompt</span>
+            <span class="text-[10px] px-1.5 py-0.5 rounded bg-[#6d8cff]/20 text-[#6d8cff]">AI Ready</span>
+          </button>
+          <button type="button" data-target="sec-api-ref" class="nav-btn w-full text-left px-3 py-2 rounded-r-lg text-slate-300 hover:bg-[#15203b] transition flex items-center justify-between">
+            <span>3. REST API Contracts</span>
+            <span class="text-[10px] text-slate-400">JSON</span>
+          </button>
+          <button type="button" data-target="sec-web-integration" class="nav-btn w-full text-left px-3 py-2 rounded-r-lg text-slate-300 hover:bg-[#15203b] transition flex items-center justify-between">
+            <span>4. Web &amp; Node.js Integration</span>
+            <span class="text-[10px] text-slate-400">JS</span>
+          </button>
+          <button type="button" data-target="sec-flutter" class="nav-btn w-full text-left px-3 py-2 rounded-r-lg text-slate-300 hover:bg-[#15203b] transition flex items-center justify-between">
+            <span>5. Flutter App Integration</span>
+            <span class="text-[10px] px-1.5 py-0.5 rounded bg-[#28c995]/20 text-[#28c995]">Dart</span>
+          </button>
+          <button type="button" data-target="sec-webhook" class="nav-btn w-full text-left px-3 py-2 rounded-r-lg text-slate-300 hover:bg-[#15203b] transition flex items-center justify-between">
+            <span>6. Webhook Receiver Guide</span>
+            <span class="text-[10px] text-slate-400">POST</span>
+          </button>
+          <button type="button" data-target="sec-simulator" class="nav-btn w-full text-left px-3 py-2 rounded-r-lg text-slate-300 hover:bg-[#15203b] transition flex items-center justify-between">
+            <span>7. Slot &amp; Payload Simulator</span>
+            <span class="text-[10px] text-amber-400">Tool</span>
+          </button>
+          <button type="button" data-target="sec-checklist" class="nav-btn w-full text-left px-3 py-2 rounded-r-lg text-slate-300 hover:bg-[#15203b] transition flex items-center justify-between">
+            <span>8. Production Checklist</span>
+            <span class="text-[10px] text-slate-400">Rules</span>
+          </button>
+        </nav>
+
+        <!-- Quick Endpoint Summary Box -->
+        <div class="pt-3 border-t border-[#1e2d4a] space-y-2 text-xs">
+          <div class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Production URLs</div>
+          <div class="bg-[#070b16] p-2.5 rounded-lg border border-[#1e2d4a] space-y-1.5">
+            <div>
+              <span class="text-[10px] text-slate-400 block">Direct Backend (Vercel):</span>
+              <code class="text-[11px] text-[#6d8cff] break-all">https://vexpay-seven.vercel.app</code>
+            </div>
+            <div>
+              <span class="text-[10px] text-slate-400 block">Dashboard &amp; Proxy (Netlify):</span>
+              <code class="text-[11px] text-[#28c995] break-all">https://vexpay.netlify.app</code>
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Right Documentation Sections -->
+    <main id="docSections" class="lg:col-span-9 space-y-8">
+
+      <!-- SECTION 1: ARCHITECTURE & HOW VEX PAY WORKS -->
+      <section id="sec-overview" class="doc-section bg-[#0f1629] border border-[#1e2d4a] rounded-2xl p-6 space-y-5">
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#1e2d4a] pb-4">
+          <div>
+            <span class="text-xs font-semibold text-[#6d8cff] uppercase tracking-wider">Section 1 · Core System Design</span>
+            <h1 class="text-2xl font-extrabold text-white mt-0.5">How VEX PAY Works (Human &amp; AI Overview)</h1>
+          </div>
+          <span class="px-3 py-1 rounded-full text-xs font-semibold bg-[#15223f] text-[#28c995] border border-[#28c995]/30">Zero-Fee UPI Automation</span>
+        </div>
+
+        <p class="text-sm text-slate-300 leading-relaxed">
+          <strong>VEX PAY</strong> ek self-hosted real-time UPI payment gateway hai jo incoming Paytm Business email alerts ko Gmail OAuth API ke through padhta hai aur <strong>Dynamic Paise Slotting (<code>+0.01</code> se <code>+0.30</code>)</strong> ke zariye har order ko 100% accuracy ke saath auto-verify karta hai.
+        </p>
+
+        <!-- 4 Step Visual Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+          <div class="bg-[#090e1c] border border-[#1e2d4a] rounded-xl p-4">
+            <div class="text-xs font-bold text-[#6d8cff] mb-1">STEP 1 · CREATE ORDER</div>
+            <div class="text-sm font-semibold text-white mb-1">Dynamic Paise Slot</div>
+            <p class="text-xs text-slate-400">Agar user ₹100 add karta hai, gateway free slot (jaise <code>₹100.01</code>) lock karta hai aur UPI QR + Intent link banata hai.</p>
+          </div>
+          <div class="bg-[#090e1c] border border-[#1e2d4a] rounded-xl p-4">
+            <div class="text-xs font-bold text-[#28c995] mb-1">STEP 2 · USER PAYS</div>
+            <div class="text-sm font-semibold text-white mb-1">QR Scan or UPI App</div>
+            <p class="text-xs text-slate-400">User GPay, PhonePe, ya Paytm se exact <code>₹100.01</code> pay karta hai (UPI Intent me amount pre-filled rehta hai).</p>
+          </div>
+          <div class="bg-[#090e1c] border border-[#1e2d4a] rounded-xl p-4">
+            <div class="text-xs font-bold text-amber-400 mb-1">STEP 3 · AUTO-SYNC</div>
+            <div class="text-sm font-semibold text-white mb-1">Live Gmail Verification</div>
+            <p class="text-xs text-slate-400">Jab aapka app <code>/api/order-status</code> poll karta hai, backend automatically Gmail check karke UTR match karta hai.</p>
+          </div>
+          <div class="bg-[#090e1c] border border-[#1e2d4a] rounded-xl p-4">
+            <div class="text-xs font-bold text-purple-400 mb-1">STEP 4 · INSTANT CREDIT</div>
+            <div class="text-sm font-semibold text-white mb-1">Polling + Webhook</div>
+            <p class="text-xs text-slate-400">Order status <code>SUCCESS</code> ho jata hai aur aapke webhook URL parUTR ke saath POST event bhej diya jata hai.</p>
+          </div>
+        </div>
+
+        <!-- Key Gateway Parameters Table -->
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr class="bg-[#090e1c] text-slate-200 border-b border-[#1e2d4a]">
+                <th class="py-2.5 px-3">Parameter / Rule</th>
+                <th class="py-2.5 px-3">Value</th>
+                <th class="py-2.5 px-3">Developer / AI Instruction</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-[#1e2d4a] text-slate-300">
+              <tr>
+                <td class="py-2.5 px-3 font-medium text-white">Dynamic Slot Range</td>
+                <td class="py-2.5 px-3"><code>+₹0.01</code> to <code>+₹0.30</code> (30 slots/amount)</td>
+                <td class="py-2.5 px-3">User ko hamesha <code>order.payableAmount</code> (e.g. <code>100.01</code>) dikhayein, par wallet mein base amount (<code>100</code>) credit karein.</td>
+              </tr>
+              <tr>
+                <td class="py-2.5 px-3 font-medium text-white">Order Validity Window</td>
+                <td class="py-2.5 px-3"><code>5 Minutes</code> (300,000 ms)</td>
+                <td class="py-2.5 px-3">Checkout screen par <code>expiresAtMs</code> tak 5 minute ka countdown timer dikhayein.</td>
+              </tr>
+              <tr>
+                <td class="py-2.5 px-3 font-medium text-white">Slot Cooldown Gap</td>
+                <td class="py-2.5 px-3"><code>5 Minutes</code> after Verify/Expire</td>
+                <td class="py-2.5 px-3">Ek slot use hone ke 5 minute baad hi dobara kisi naye order ko allot hota hai.</td>
+              </tr>
+              <tr>
+                <td class="py-2.5 px-3 font-medium text-white">Recommended Polling Rate</td>
+                <td class="py-2.5 px-3">Every <code>3 to 4 Seconds</code></td>
+                <td class="py-2.5 px-3"><code>GET /api/order-status?orderId=...</code> call karne se Vercel par auto-Gmail sync apne aap trigger hota hai.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- SECTION 2: AI AGENT MASTER PROMPT (ONE-CLICK COPY) -->
+      <section id="sec-ai-prompt" class="doc-section bg-[#0f1629] border border-[#6d8cff]/40 rounded-2xl p-6 space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#1e2d4a] pb-3">
+          <div>
+            <span class="text-xs font-semibold text-[#6d8cff] uppercase tracking-wider">Section 2 · For ChatGPT, Cursor, Claude &amp; Gemini</span>
+            <h2 class="text-xl font-extrabold text-white mt-0.5">AI Agent Master Integration Prompt (Copy &amp; Paste to AI)</h2>
+          </div>
+          <button type="button" data-copy-target="code-ai-prompt" class="copy-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#6d8cff] hover:bg-[#5879ff] text-white transition">
+            📋 Copy AI Prompt
+          </button>
+        </div>
+
+        <p class="text-xs text-slate-300">
+          Agar aap kisi bhi AI coding tool (Cursor, ChatGPT, Claude, Windsurf, ya Gemini) se apni <strong>Website</strong> ya <strong>Flutter App</strong> mein VEX PAY judwana chahte hain, toh bas neeche wala box copy karke AI ko bhej dein:
+        </p>
+
+        <pre id="code-ai-prompt" class="bg-[#050811] border border-[#1e2d4a] rounded-xl p-4 text-xs text-emerald-300 overflow-x-auto leading-relaxed"></pre>
+      </section>
+
+      <!-- SECTION 3: REST API CONTRACTS -->
+      <section id="sec-api-ref" class="doc-section bg-[#0f1629] border border-[#1e2d4a] rounded-2xl p-6 space-y-6">
+        <div class="border-b border-[#1e2d4a] pb-3">
+          <span class="text-xs font-semibold text-[#6d8cff] uppercase tracking-wider">Section 3 · Exact HTTP Specifications</span>
+          <h2 class="text-xl font-extrabold text-white mt-0.5">REST API Endpoints &amp; JSON Schemas</h2>
+        </div>
+
+        <!-- Endpoint 3.1: Create Order -->
+        <div class="space-y-3">
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="px-2.5 py-1 rounded-md text-xs font-bold bg-[#28c995]/20 text-[#28c995] border border-[#28c995]/40">POST</span>
+            <code class="text-sm text-white font-semibold">/api/v1/orders</code>
+            <span class="text-xs text-slate-400">— Create a new slotted UPI payment order</span>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <span class="text-xs font-semibold text-slate-300">Request Headers &amp; Body</span>
+                <button type="button" data-copy-target="code-create-req" class="copy-btn text-[11px] px-2.5 py-1 rounded bg-[#162340] hover:bg-[#6d8cff] text-slate-200 hover:text-white transition">Copy</button>
+              </div>
+              <pre id="code-create-req" class="bg-[#050811] border border-[#1e2d4a] rounded-xl p-3.5 text-xs text-sky-300 overflow-x-auto"></pre>
+            </div>
+
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <span class="text-xs font-semibold text-slate-300">Response (201 Created)</span>
+                <button type="button" data-copy-target="code-create-res" class="copy-btn text-[11px] px-2.5 py-1 rounded bg-[#162340] hover:bg-[#6d8cff] text-slate-200 hover:text-white transition">Copy</button>
+              </div>
+              <pre id="code-create-res" class="bg-[#050811] border border-[#1e2d4a] rounded-xl p-3.5 text-xs text-emerald-300 overflow-x-auto">{
+  "success": true,
+  "order": {
+    "orderId": "VEX_05AA71433080A33671",
+    "appId": "APP_9F82B1C044E1",
+    "appName": "Esports Hub",
+    "appOrderId": "ORD_1763098200",
+    "customerName": "Rajan",
+    "originalAmount": "100.00",
+    "payableAmount": "100.01",
+    "payablePaise": 10001,
+    "slotIndex": 1,
+    "transactionNote": "Rajan Txn VEX_05AA71433080A33671",
+    "upiIntentUrl": "upi://pay?pa=paytmqr6rwd4k@ptys&pn=rinku%20sinha&am=100.01&cu=INR&tn=Rajan%20Txn%20VEX_05AA71433080A33671",
+    "qrImageUrl": "https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=...",
+    "createdAt": "2026-11-14T06:19:39.000Z",
+    "createdAtMs": 1794617379000,
+    "expiresAtMs": 1794617679000,
+    "status": "PENDING"
+  }
+}</pre>
+            </div>
+          </div>
+        </div>
+
+        <!-- Endpoint 3.2: Check Order Status -->
+        <div class="space-y-3 pt-4 border-t border-[#1e2d4a]">
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="px-2.5 py-1 rounded-md text-xs font-bold bg-[#6d8cff]/20 text-[#6d8cff] border border-[#6d8cff]/40">GET</span>
+            <code class="text-sm text-white font-semibold">/api/order-status?orderId={orderId}</code>
+            <span class="text-xs text-slate-400">— Triggers live Gmail sync &amp; returns current status</span>
+          </div>
+          <p class="text-xs text-slate-300">
+            Is endpoint mein <code>orderId</code> (<code>VEX_...</code>) ya aapka apna <code>appOrderId</code> dono pass kar sakte hain. Jab tak order <code>PENDING</code> hai, ye endpoint automatically Gmail inbox scan karta hai.
+          </p>
+          <div class="relative">
+            <button type="button" data-copy-target="code-status-res" class="copy-btn absolute top-2.5 right-2.5 text-[11px] px-2.5 py-1 rounded bg-[#162340] hover:bg-[#6d8cff] text-slate-200 hover:text-white transition">Copy</button>
+            <pre id="code-status-res" class="bg-[#050811] border border-[#1e2d4a] rounded-xl p-3.5 text-xs text-sky-300 overflow-x-auto">{
+  "success": true,
+  "orderId": "VEX_05AA71433080A33671",
+  "status": "SUCCESS",        // "PENDING" | "SUCCESS" | "EXPIRED"
+  "payableAmount": "100.01",
+  "utr": "431819283741",      // Present when status === "SUCCESS"
+  "expiresAt": 1794617679000
+}</pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 4: WEB & NODE.JS INTEGRATION -->
+      <section id="sec-web-integration" class="doc-section bg-[#0f1629] border border-[#1e2d4a] rounded-2xl p-6 space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#1e2d4a] pb-3">
+          <div>
+            <span class="text-xs font-semibold text-[#6d8cff] uppercase tracking-wider">Section 4 · Website / Full-Stack Integration</span>
+            <h2 class="text-xl font-extrabold text-white mt-0.5">Node.js Backend + HTML/JS Checkout Integration</h2>
+          </div>
+          <div class="flex gap-1.5">
+            <button type="button" data-webtab="node" class="web-tab tab-active px-3 py-1.5 rounded-lg text-xs font-semibold border border-[#27395c] transition">Node.js Backend</button>
+            <button type="button" data-webtab="browser" class="web-tab px-3 py-1.5 rounded-lg text-xs font-semibold border border-[#27395c] text-slate-300 transition">Frontend Polling UI</button>
+          </div>
+        </div>
+
+        <div id="webpanel-node" class="space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-xs text-slate-400">Apne Node.js / Express server se VEX PAY order create karne ka route:</span>
+            <button type="button" data-copy-target="code-node-create" class="copy-btn text-xs px-3 py-1 rounded bg-[#162340] hover:bg-[#6d8cff] text-white transition">Copy Code</button>
+          </div>
+          <pre id="code-node-create" class="bg-[#050811] border border-[#1e2d4a] rounded-xl p-4 text-xs text-sky-300 overflow-x-auto leading-relaxed"></pre>
+        </div>
+
+        <div id="webpanel-browser" class="hidden space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-xs text-slate-400">Website frontend par QR dikhane, countdown chalane aur har 3 second mein payment verify karne ka code:</span>
+            <button type="button" data-copy-target="code-browser-poll" class="copy-btn text-xs px-3 py-1 rounded bg-[#162340] hover:bg-[#6d8cff] text-white transition">Copy Code</button>
+          </div>
+          <pre id="code-browser-poll" class="bg-[#050811] border border-[#1e2d4a] rounded-xl p-4 text-xs text-emerald-300 overflow-x-auto leading-relaxed"></pre>
+        </div>
+      </section>
+
+      <!-- SECTION 5: FLUTTER MOBILE APP INTEGRATION -->
+      <section id="sec-flutter" class="doc-section bg-[#0f1629] border border-[#28c995]/40 rounded-2xl p-6 space-y-5">
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#1e2d4a] pb-3">
+          <div>
+            <span class="text-xs font-semibold text-[#28c995] uppercase tracking-wider">Section 5 · Complete Flutter (Android &amp; iOS) Kit</span>
+            <h2 class="text-xl font-extrabold text-white mt-0.5">Flutter App Integration (QR + UPI Deep Link + Auto-Verify)</h2>
+          </div>
+          <div class="flex flex-wrap gap-1.5">
+            <button type="button" data-fltab="service" class="fl-tab tab-active px-3 py-1.5 rounded-lg text-xs font-semibold border border-[#27395c] transition">1. vex_pay_service.dart</button>
+            <button type="button" data-fltab="screen" class="fl-tab px-3 py-1.5 rounded-lg text-xs font-semibold border border-[#27395c] text-slate-300 transition">2. Checkout Screen Widget</button>
+            <button type="button" data-fltab="manifest" class="fl-tab px-3 py-1.5 rounded-lg text-xs font-semibold border border-[#27395c] text-slate-300 transition">3. pubspec &amp; AndroidManifest</button>
+          </div>
+        </div>
+
+        <p class="text-xs text-slate-300">
+          Flutter app (jaise <strong>E Sports Hub</strong>) mein VEX PAY lagane ke liye ye 3 parts use karein. Isme <strong>QR Code</strong> ke saath-saath <strong>"Open UPI App (GPay / PhonePe / Paytm)"</strong> button aur 3-second auto-verification timer pehle se juda hua hai.
+        </p>
+
+        <!-- Flutter Tab 1: Service -->
+        <div id="flpanel-service" class="space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-[#28c995]">File 1: <code>lib/services/vex_pay_service.dart</code></span>
+            <button type="button" data-copy-target="code-flutter-service" class="copy-btn text-xs px-3 py-1 rounded bg-[#162340] hover:bg-[#6d8cff] text-white transition">Copy Dart Service</button>
+          </div>
+          <pre id="code-flutter-service" class="bg-[#050811] border border-[#1e2d4a] rounded-xl p-4 text-xs text-sky-300 overflow-x-auto leading-relaxed"></pre>
+        </div>
+
+        <!-- Flutter Tab 2: Checkout UI Screen -->
+        <div id="flpanel-screen" class="hidden space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-[#28c995]">File 2: <code>lib/screens/vex_pay_checkout_screen.dart</code></span>
+            <button type="button" data-copy-target="code-flutter-screen" class="copy-btn text-xs px-3 py-1 rounded bg-[#162340] hover:bg-[#6d8cff] text-white transition">Copy Flutter Widget</button>
+          </div>
+          <pre id="code-flutter-screen" class="bg-[#050811] border border-[#1e2d4a] rounded-xl p-4 text-xs text-emerald-300 overflow-x-auto leading-relaxed"></pre>
+        </div>
+
+        <!-- Flutter Tab 3: pubspec & AndroidManifest -->
+        <div id="flpanel-manifest" class="hidden space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-[#28c995]">File 3: <code>pubspec.yaml</code> &amp; <code>android/app/src/main/AndroidManifest.xml</code></span>
+            <button type="button" data-copy-target="code-flutter-manifest" class="copy-btn text-xs px-3 py-1 rounded bg-[#162340] hover:bg-[#6d8cff] text-white transition">Copy Config</button>
+          </div>
+          <pre id="code-flutter-manifest" class="bg-[#050811] border border-[#1e2d4a] rounded-xl p-4 text-xs text-amber-300 overflow-x-auto leading-relaxed"># 1. Add to pubspec.yaml under dependencies:
+dependencies:
+  flutter:
+    sdk: flutter
+  http: ^1.2.2
+  url_launcher: ^6.3.0
+
+# 2. Add inside android/app/src/main/AndroidManifest.xml (above &lt;application&gt;)
+# Required on Android 11+ so url_launcher can open GPay, PhonePe, Paytm via upi://pay
+&lt;uses-permission android:name="android.permission.INTERNET"/&gt;
+
+&lt;queries&gt;
+  &lt;intent&gt;
+    &lt;action android:name="android.intent.action.VIEW" /&gt;
+    &lt;data android:scheme="upi" android:host="pay" /&gt;
+  &lt;/intent&gt;
+  &lt;package android:name="com.google.android.apps.nbu.paisa.user" /&gt;
+  &lt;package android:name="com.phonepe.app" /&gt;
+  &lt;package android:name="net.one97.paytm" /&gt;
+&lt;/queries&gt;</pre>
+        </div>
+      </section>
+
+      <!-- SECTION 6: WEBHOOK RECEIVER -->
+      <section id="sec-webhook" class="doc-section bg-[#0f1629] border border-[#1e2d4a] rounded-2xl p-6 space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#1e2d4a] pb-3">
+          <div>
+            <span class="text-xs font-semibold text-[#6d8cff] uppercase tracking-wider">Section 6 · Server-to-Server Callback</span>
+            <h2 class="text-xl font-extrabold text-white mt-0.5">Webhook Payload &amp; Express Listener</h2>
+          </div>
+          <button type="button" data-copy-target="code-webhook" class="copy-btn text-xs px-3 py-1.5 rounded-lg bg-[#162340] hover:bg-[#6d8cff] text-white transition">Copy Webhook Code</button>
+        </div>
+
+        <p class="text-xs text-slate-300">
+          Jab Gmail sync payment verify kar leta hai, VEX PAY aapke registered <code>webhookUrl</code> par ek <code>POST</code> request bhejta hai:
+        </p>
+
+        <pre id="code-webhook" class="bg-[#050811] border border-[#1e2d4a] rounded-xl p-4 text-xs text-sky-300 overflow-x-auto leading-relaxed"></pre>
+      </section>
+
+      <!-- SECTION 7: INTERACTIVE PAYLOAD & SLOT SIMULATOR -->
+      <section id="sec-simulator" class="doc-section bg-[#0f1629] border border-[#1e2d4a] rounded-2xl p-6 space-y-4">
+        <div class="border-b border-[#1e2d4a] pb-3">
+          <span class="text-xs font-semibold text-amber-400 uppercase tracking-wider">Section 7 · Interactive Tester</span>
+          <h2 class="text-xl font-extrabold text-white mt-0.5">Dynamic Paise Slot &amp; UPI Intent Previewer</h2>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label for="simAmount" class="block text-xs text-slate-400 mb-1">Base Order Amount (₹)</label>
+            <input id="simAmount" type="number" min="1" value="100" class="w-full px-3 py-2 rounded-lg bg-[#070b16] border border-[#27395c] text-sm text-white" />
+          </div>
+          <div>
+            <label for="simSlot" class="block text-xs text-slate-400 mb-1">Allocated Slot (1 to 30)</label>
+            <input id="simSlot" type="number" min="1" max="30" value="1" class="w-full px-3 py-2 rounded-lg bg-[#070b16] border border-[#27395c] text-sm text-white" />
+          </div>
+          <div>
+            <label for="simUser" class="block text-xs text-slate-400 mb-1">Customer Name</label>
+            <input id="simUser" type="text" value="Rajan" class="w-full px-3 py-2 rounded-lg bg-[#070b16] border border-[#27395c] text-sm text-white" />
+          </div>
+        </div>
+
+        <div class="bg-[#070b16] border border-[#1e2d4a] rounded-xl p-4 grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+          <div>
+            <div class="text-xs text-slate-400">User Pays Exact (Payable Amount):</div>
+            <div id="simPayableOut" class="text-2xl font-extrabold text-[#28c995] mt-0.5">₹100.01</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-400">Credit to User Wallet (Base Amount):</div>
+            <div id="simBaseOut" class="text-2xl font-extrabold text-[#6d8cff] mt-0.5">₹100.00</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-400">Generated UPI Deep Link:</div>
+            <code id="simUpiOut" class="block text-[11px] text-amber-300 break-all mt-1"></code>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 8: GOLDEN RULES CHECKLIST -->
+      <section id="sec-checklist" class="doc-section bg-[#0f1629] border border-[#1e2d4a] rounded-2xl p-6 space-y-3">
+        <span class="text-xs font-semibold text-[#28c995] uppercase tracking-wider">Section 8 · Mandatory Checklist</span>
+        <h2 class="text-xl font-extrabold text-white">5 Golden Rules for Developers &amp; AI Assistants</h2>
+        <ul class="space-y-2 text-xs text-slate-300 list-disc pl-5">
+          <li><strong>Hamesha Full HTTPS URL use karein:</strong> <code>https://vexpay-seven.vercel.app</code> (kabhi bhi bina <code>https://</code> ke URL pass na karein).</li>
+          <li><strong>Exact Payable Amount Dikhayein:</strong> Customer ko QR ke upar bold अक्षरों mein <code>order.payableAmount</code> (jaise <code>₹100.01</code>) dikhayein taaki wo exact paise transfer kare.</li>
+          <li><strong>Wallet Mein Base Amount Credit Karein:</strong> Jab order <code>SUCCESS</code> ho, user ke game/app wallet mein requested amount (<code>₹100</code>) add karein, extra slot paise (<code>.01</code>) sirf matching ke liye hain.</li>
+          <li><strong>UTR / Order ID Idempotency Rakhein:</strong> Ek <code>orderId</code> ya <code>utr</code> par sirf ek baar wallet balance badhayein (agar polling aur webhook dono aayein toh double credit na ho).</li>
+          <li><strong>Polling Chalu Rakhein:</strong> Jab user payment screen par ho, har 3–4 second mein <code>GET /api/order-status?orderId=...</code> call karein — isse Vercel backend automatically Gmail check karke order ko <code>SUCCESS</code> mark kar deta hai.</li>
+        </ul>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toastBox" class="fixed bottom-5 right-5 z-50 hidden px-4 py-2.5 rounded-xl bg-[#28c995] text-[#070b16] font-bold text-xs shadow-2xl">
+    Copied to clipboard!
+  </div>
+
+  <script>
+    (function () {
+      const cfgBaseUrl = document.getElementById('cfgBaseUrl');
+      const cfgApiKey = document.getElementById('cfgApiKey');
+      const cfgWebhookSecret = document.getElementById('cfgWebhookSecret');
+
+      // Detect origin if running on live domain
+      if (window.location.origin && window.location.origin.startsWith('http') && !window.location.origin.includes('localhost')) {
+        cfgBaseUrl.value = window.location.origin;
+      }
+
+      function showToast(msg) {
+        const box = document.getElementById('toastBox');
+        box.textContent = msg;
+        box.classList.remove('hidden');
+        clearTimeout(window.__toastTimer);
+        window.__toastTimer = setTimeout(() => box.classList.add('hidden'), 2200);
+      }
+
+      function copyText(text, btn) {
+        const finish = () => {
+          if (btn) {
+            const prev = btn.textContent;
+            btn.textContent = '✓ Copied!';
+            setTimeout(() => { btn.textContent = prev; }, 1800);
+          }
+          showToast('Code copied to clipboard!');
+        };
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(finish).catch(() => fallbackCopy(text, finish));
+        } else {
+          fallbackCopy(text, finish);
+        }
+      }
+
+      function fallbackCopy(text, cb) {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        try { document.execCommand('copy'); } catch (e) {}
+        document.body.removeChild(ta);
+        if (cb) cb();
+      }
+
+      function renderDynamicSnippets() {
+        const baseUrl = (cfgBaseUrl.value || 'https://vexpay-seven.vercel.app').replace(/\/+$/, '');
+        const apiKey = (cfgApiKey.value || 'vex_your_live_api_key_here').trim();
+        const whSecret = (cfgWebhookSecret.value || 'whsec_your_webhook_secret').trim();
+
+        // 1. AI Master Prompt
+        document.getElementById('code-ai-prompt').textContent =
+`You are integrating the VEX PAY UPI Payment Gateway into my application.
 Use the exact production specifications below without inventing endpoints or fields:
 
 1. GATEWAY CONFIGURATION:
-   - Base URL: https://vexpay-seven.vercel.app
-   - Required Header for Order Creation: "x-vex-api-key": "vex_your_live_api_key_here"
+   - Base URL: ${baseUrl}
+   - Required Header for Order Creation: "x-vex-api-key": "${apiKey}"
    - Content-Type: "application/json"
 
 2. STEP 1 — CREATE ORDER:
-   - Endpoint: POST https://vexpay-seven.vercel.app/api/v1/orders
-   - Headers: { "Content-Type": "application/json", "x-vex-api-key": "vex_your_live_api_key_here" }
+   - Endpoint: POST ${baseUrl}/api/v1/orders
+   - Headers: { "Content-Type": "application/json", "x-vex-api-key": "${apiKey}" }
    - JSON Body:
      {
        "amount": 100,                      // Positive number in INR (minimum 1)
@@ -34,7 +599,7 @@ Use the exact production specifications below without inventing endpoints or fie
 
 3. STEP 2 — DISPLAY CHECKOUT & POLL ORDER STATUS:
    - Show the QR code (order.qrImageUrl), a button to launch order.upiIntentUrl, and highlight that the user must pay the exact order.payableAmount (e.g. ₹100.01).
-   - Poll every 3 seconds: GET https://vexpay-seven.vercel.app/api/order-status?orderId={order.orderId}
+   - Poll every 3 seconds: GET ${baseUrl}/api/order-status?orderId={order.orderId}
    - Calling /api/order-status automatically triggers Gmail verification on the VEX PAY backend.
    - Response:
      {
@@ -56,4 +621,412 @@ Use the exact production specifications below without inventing endpoints or fie
        "amount": "100.01",
        "utr": "431819283741",
        "timestamp": "2026-11-14T06:20:15.000Z"
-     }
+     }`;
+
+        // 2. Create Request Snippet
+        document.getElementById('code-create-req').textContent =
+`POST ${baseUrl}/api/v1/orders
+Headers:
+  Content-Type: application/json
+  x-vex-api-key: ${apiKey}
+
+Body:
+{
+  "amount": 100,
+  "app_order_id": "ORD_1763098200",
+  "customer_id": "USER_101",
+  "customer_name": "Rajan"
+}`;
+
+        // 3. Node.js Backend Snippet
+        document.getElementById('code-node-create').textContent =
+`// Node.js / Express Route to Create a VEX PAY Order
+const VEX_BASE_URL = "${baseUrl}";
+const VEX_API_KEY = "${apiKey}";
+
+app.post("/api/wallet/add-funds", async (req, res) => {
+  try {
+    const { amount, userId, userName } = req.body;
+    const appOrderId = "ORD_" + Date.now();
+
+    const response = await fetch(\`\${VEX_BASE_URL}/api/v1/orders\`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-vex-api-key": VEX_API_KEY
+      },
+      body: JSON.stringify({
+        amount: Number(amount),
+        app_order_id: appOrderId,
+        customer_id: String(userId || "GUEST"),
+        customer_name: String(userName || "Player")
+      })
+    });
+
+    const data = await response.json();
+    if (!response.ok || !data.success) {
+      return res.status(400).json({ error: data.error || "Failed to create order" });
+    }
+
+    // Save data.order.orderId & base amount in your DB as PENDING
+    return res.json(data);
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});`;
+
+        // 4. Browser Polling Snippet
+        document.getElementById('code-browser-poll').textContent =
+`// Browser JS: Poll Order Status Every 3 Seconds (Auto-triggers Gmail Sync)
+const VEX_BASE_URL = "${baseUrl}";
+
+function startVexPaymentPolling(orderId, onSuccess, onExpired) {
+  const timer = setInterval(async () => {
+    try {
+      const res = await fetch(\`\${VEX_BASE_URL}/api/order-status?orderId=\${encodeURIComponent(orderId)}\`);
+      const data = await res.json();
+
+      if (data.status === "SUCCESS") {
+        clearInterval(timer);
+        onSuccess(data); // data.utr contains bank UTR
+      } else if (data.status === "EXPIRED") {
+        clearInterval(timer);
+        onExpired(data);
+      }
+    } catch (err) {
+      console.error("Polling error:", err);
+    }
+  }, 3000);
+
+  return () => clearInterval(timer);
+}`;
+
+        // 5. Flutter Service
+        document.getElementById('code-flutter-service').textContent =
+`import 'dart:convert';
+import 'package:http/http.dart' as http;
+
+class VexPayService {
+  static const String baseUrl = '${baseUrl}';
+  static const String apiKey = '${apiKey}';
+
+  /// 1. Create a new dynamic-slot UPI order
+  static Future<Map<String, dynamic>> createOrder({
+    required double amount,
+    required String appOrderId,
+    required String customerId,
+    required String customerName,
+  }) async {
+    final uri = Uri.parse('\$baseUrl/api/v1/orders');
+    final response = await http.post(
+      uri,
+      headers: {
+        'Content-Type': 'application/json',
+        'x-vex-api-key': apiKey,
+      },
+      body: jsonEncode({
+        'amount': amount,
+        'app_order_id': appOrderId,
+        'customer_id': customerId,
+        'customer_name': customerName,
+      }),
+    );
+
+    final data = jsonDecode(response.body) as Map<String, dynamic>;
+    if (response.statusCode == 201 && data['success'] == true) {
+      return Map<String, dynamic>.from(data['order']);
+    }
+    throw Exception(data['error'] ?? 'Failed to create VEX PAY order');
+  }
+
+  /// 2. Check order status (Also auto-triggers Gmail verification on backend)
+  static Future<Map<String, dynamic>> checkOrderStatus(String orderId) async {
+    final uri = Uri.parse('\$baseUrl/api/order-status?orderId=\${Uri.encodeComponent(orderId)}');
+    final response = await http.get(uri);
+    final data = jsonDecode(response.body) as Map<String, dynamic>;
+
+    if (response.statusCode == 200 && data['success'] == true) {
+      return data;
+    }
+    throw Exception(data['error'] ?? 'Unable to fetch order status');
+  }
+}`;
+
+        // 6. Flutter Checkout Screen
+        document.getElementById('code-flutter-screen').textContent =
+`import 'dart:async';
+import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:esports_hub/services/vex_pay_service.dart';
+
+class VexPayCheckoutScreen extends StatefulWidget {
+  final double baseAmount;
+  final String customerId;
+  final String customerName;
+  final void Function(String orderId, String utr, double baseAmount) onPaymentSuccess;
+
+  const VexPayCheckoutScreen({
+    super.key,
+    required this.baseAmount,
+    required this.customerId,
+    required this.customerName,
+    required this.onPaymentSuccess,
+  });
+
+  @override
+  State<VexPayCheckoutScreen> createState() => _VexPayCheckoutScreenState();
+}
+
+class _VexPayCheckoutScreenState extends State<VexPayCheckoutScreen> {
+  Map<String, dynamic>? _order;
+  String _status = 'LOADING';
+  String? _error;
+  int _secondsLeft = 300;
+  Timer? _pollTimer;
+  Timer? _countdownTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _initOrder();
+  }
+
+  Future<void> _initOrder() async {
+    try {
+      final appOrderId = 'FL_\${DateTime.now().millisecondsSinceEpoch}';
+      final order = await VexPayService.createOrder(
+        amount: widget.baseAmount,
+        appOrderId: appOrderId,
+        customerId: widget.customerId,
+        customerName: widget.customerName,
+      );
+      if (!mounted) return;
+      final expiresAtMs = (order['expiresAtMs'] as num).toInt();
+      final diffSec = ((expiresAtMs - DateTime.now().millisecondsSinceEpoch) / 1000).floor();
+
+      setState(() {
+        _order = order;
+        _status = 'PENDING';
+        _secondsLeft = diffSec > 0 ? diffSec : 300;
+      });
+
+      _startTimers(order['orderId'].toString());
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _status = 'ERROR';
+        _error = e.toString();
+      });
+    }
+  }
+
+  void _startTimers(String orderId) {
+    _countdownTimer = Timer.periodic(const Duration(seconds: 1), (t) {
+      if (!mounted) return;
+      if (_secondsLeft <= 1) {
+        t.cancel();
+        _pollTimer?.cancel();
+        setState(() => _status = 'EXPIRED');
+      } else {
+        setState(() => _secondsLeft--);
+      }
+    });
+
+    // Poll every 3 seconds -> automatically triggers Gmail sync on Vercel
+    _pollTimer = Timer.periodic(const Duration(seconds: 3), (t) async {
+      try {
+        final res = await VexPayService.checkOrderStatus(orderId);
+        if (!mounted) return;
+        final st = res['status']?.toString() ?? 'PENDING';
+        if (st == 'SUCCESS') {
+          t.cancel();
+          _countdownTimer?.cancel();
+          setState(() => _status = 'SUCCESS');
+          widget.onPaymentSuccess(orderId, res['utr']?.toString() ?? '', widget.baseAmount);
+        } else if (st == 'EXPIRED') {
+          t.cancel();
+          _countdownTimer?.cancel();
+          setState(() => _status = 'EXPIRED');
+        }
+      } catch (_) {}
+    });
+  }
+
+  Future<void> _launchUpiApp() async {
+    final upiUrl = _order?['upiIntentUrl']?.toString();
+    if (upiUrl == null) return;
+    final uri = Uri.parse(upiUrl);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
+  }
+
+  @override
+  void dispose() {
+    _pollTimer?.cancel();
+    _countdownTimer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final mins = (_secondsLeft ~/ 60).toString().padLeft(2, '0');
+    final secs = (_secondsLeft % 60).toString().padLeft(2, '0');
+
+    return Scaffold(
+      backgroundColor: const Color(0xFF070B16),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF0F1629),
+        title: const Text('VEX PAY Secure UPI'),
+      ),
+      body: Center(
+        child: _status == 'LOADING'
+            ? const CircularProgressIndicator()
+            : _status == 'ERROR'
+                ? Text('Error: \$_error', style: const TextStyle(color: Colors.redAccent))
+                : Container(
+                    margin: const EdgeInsets.all(20),
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF0F1629),
+                      borderRadius: BorderRadius.circular(18),
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text('Pay Exact Amount Only', style: TextStyle(color: Colors.white70)),
+                        const SizedBox(height: 6),
+                        Text(
+                          '₹\${_order!['payableAmount']}',
+                          style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Color(0xFF28C995)),
+                        ),
+                        const SizedBox(height: 16),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Image.network(_order!['qrImageUrl'], width: 220, height: 220),
+                        ),
+                        const SizedBox(height: 16),
+                        Text('Expires in \$mins:\$secs', style: const TextStyle(color: Colors.amber)),
+                        const SizedBox(height: 16),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: _launchUpiApp,
+                            child: const Text('Pay via GPay / PhonePe / Paytm'),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+      ),
+    );
+  }
+}`;
+
+        // 7. Webhook Receiver
+        document.getElementById('code-webhook').textContent =
+`// Express.js Webhook Receiver for VEX PAY
+// Configured Webhook Secret: ${whSecret}
+app.post("/api/webhook/vexpay", express.json(), async (req, res) => {
+  const { event, orderId, appOrderId, amount, utr, timestamp } = req.body || {};
+
+  if (event === "payment.success" && orderId) {
+    // 1. Check in your database if orderId or utr is already processed (Idempotency)
+    // 2. Look up the pending order by appOrderId or orderId
+    // 3. Credit the user's wallet with the original base amount (e.g. ₹100)
+    console.log(\`[VEX PAY] Verified Order \${appOrderId} (\${orderId}) | Paid: ₹\${amount} | UTR: \${utr}\`);
+  }
+
+  return res.status(200).json({ received: true });
+});`;
+      }
+
+      // Simulator update
+      const simAmount = document.getElementById('simAmount');
+      const simSlot = document.getElementById('simSlot');
+      const simUser = document.getElementById('simUser');
+
+      function updateSimulator() {
+        const base = Math.max(1, Number(simAmount.value || 100));
+        const slot = Math.min(30, Math.max(1, Number(simSlot.value || 1)));
+        const user = (simUser.value || 'Rajan').replace(/[^a-zA-Z0-9 ]/g, '').trim() || 'User';
+        const payable = (base + slot / 100).toFixed(2);
+        document.getElementById('simPayableOut').textContent = '₹' + payable;
+        document.getElementById('simBaseOut').textContent = '₹' + base.toFixed(2);
+        const note = encodeURIComponent(user + ' Txn VEX_DEMO123');
+        document.getElementById('simUpiOut').textContent =
+          `upi://pay?pa=paytmqr6rwd4k@ptys&pn=rinku%20sinha&am=${payable}&cu=INR&tn=${note}`;
+      }
+
+      [cfgBaseUrl, cfgApiKey, cfgWebhookSecret].forEach(el => el.addEventListener('input', renderDynamicSnippets));
+      [simAmount, simSlot, simUser].forEach(el => el.addEventListener('input', updateSimulator));
+
+      // Copy buttons
+      document.querySelectorAll('.copy-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const targetId = btn.getAttribute('data-copy-target');
+          const pre = document.getElementById(targetId);
+          if (pre) copyText(pre.textContent, btn);
+        });
+      });
+
+      document.getElementById('copyAiMasterBtn').addEventListener('click', (e) => {
+        const pre = document.getElementById('code-ai-prompt');
+        copyText(pre.textContent, e.currentTarget);
+      });
+
+      document.getElementById('goDashboardBtn').addEventListener('click', () => {
+        try {
+          window.location.assign('/');
+        } catch (_) {}
+      });
+
+      // Web integration tabs
+      document.querySelectorAll('.web-tab').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const tab = btn.getAttribute('data-webtab');
+          document.querySelectorAll('.web-tab').forEach(b => b.classList.remove('tab-active'));
+          btn.classList.add('tab-active');
+          document.getElementById('webpanel-node').classList.toggle('hidden', tab !== 'node');
+          document.getElementById('webpanel-browser').classList.toggle('hidden', tab !== 'browser');
+        });
+      });
+
+      // Flutter integration tabs
+      document.querySelectorAll('.fl-tab').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const tab = btn.getAttribute('data-fltab');
+          document.querySelectorAll('.fl-tab').forEach(b => b.classList.remove('tab-active'));
+          btn.classList.add('tab-active');
+          document.getElementById('flpanel-service').classList.toggle('hidden', tab !== 'service');
+          document.getElementById('flpanel-screen').classList.toggle('hidden', tab !== 'screen');
+          document.getElementById('flpanel-manifest').classList.toggle('hidden', tab !== 'manifest');
+        });
+      });
+
+      // Sidebar smooth scroll & active highlight
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const targetId = btn.getAttribute('data-target');
+          const sec = document.getElementById(targetId);
+          document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('nav-active'));
+          btn.classList.add('nav-active');
+          if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+      });
+
+      // Live search filter across sections
+      document.getElementById('docSearch').addEventListener('input', (e) => {
+        const q = e.target.value.toLowerCase().trim();
+        document.querySelectorAll('.doc-section').forEach(sec => {
+          const match = !q || sec.textContent.toLowerCase().includes(q);
+          sec.classList.toggle('hidden', !match);
+        });
+      });
+
+      renderDynamicSnippets();
+      updateSimulator();
+    })();
+  </script>
+</body>
+</html>
