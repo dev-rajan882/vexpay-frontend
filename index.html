@@ -1,580 +1,1154 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en" class="dark">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>VEX PAY — Gateway Operations Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VEX PAY — Enterprise UPI Gateway Operations Dashboard</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #0b1020;
-      --panel: #121a2d;
-      --panel2: #18233a;
-      --line: #27334c;
-      --text: #edf3ff;
-      --muted: #8fa0bd;
+      --bg: #060a14;
+      --panel: #0d1426;
+      --panel-hover: #131d36;
+      --line: #1e2d4a;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
       --blue: #6d8cff;
       --green: #28c995;
-      --amber: #f2b84b;
-      --red: #ff6b79;
+      --amber: #f59e0b;
+      --red: #f43f5e;
     }
     * { box-sizing: border-box; }
     body {
       margin: 0;
-      background: var(--bg);
+      background: radial-gradient(circle at 15% 0%, rgba(109, 140, 255, 0.08), transparent 40%),
+                  radial-gradient(circle at 85% 10%, rgba(40, 201, 149, 0.06), transparent 35%),
+                  var(--bg);
       color: var(--text);
-      font: 13px Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Arial, sans-serif;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      overflow-x: hidden;
     }
-    button, input, select { font: inherit; }
-    button {
-      cursor: pointer;
-      border: 0;
-      border-radius: 8px;
-      padding: 8px 14px;
-      background: var(--blue);
-      color: white;
-      font-weight: 650;
-      transition: opacity 0.15s;
+    code, .mono {
+      font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
     }
-    button:hover { opacity: 0.9; }
-    button.secondary { background: #26344f; }
-    button.danger { background: #882b3d; }
-    button.danger:hover { background: #a5344a; }
-    .shell { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
-    .side { background: #0e1628; border-right: 1px solid var(--line); padding: 24px 16px; }
-    .brand { font-size: 21px; font-weight: 850; letter-spacing: 1.5px; margin: 4px 10px 30px; }
-    .brand span { color: var(--blue); }
-    .nav { display: grid; gap: 7px; }
-    .nav button, .nav a button { width: 100%; text-align: left; background: transparent; color: #a9b7d0; font-weight: 600; }
-    .nav button.active, .nav button:hover, .nav a button:hover { background: #1b2944; color: white; }
-    .main { padding: 24px; min-width: 0; }
-    .top { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 22px; }
-    .top h1 { font-size: 24px; margin: 0; }
-    .muted { color: var(--muted); }
-    .pill { border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px; color: var(--muted); font-size: 12px; }
-    .dot { display: inline-block; width: 7px; height: 7px; background: var(--green); border-radius: 50%; margin-right: 7px; }
-    .cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-bottom: 18px; }
-    .card, .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 18px; }
-    .metric { font-size: 24px; font-weight: 800; margin-top: 6px; }
-    .label { color: var(--muted); font-size: 12px; }
-    .tablewrap { overflow-x: auto; margin-top: 10px; }
-    table { width: 100%; border-collapse: collapse; white-space: nowrap; }
-    th, td { text-align: left; padding: 10px 10px; border-bottom: 1px solid var(--line); font-size: 12px; }
-    th { color: var(--muted); font-weight: 600; background: #0f1627; }
-    .status { font-size: 11px; padding: 4px 8px; border-radius: 6px; background: #26344f; font-weight: 700; display: inline-block; }
-    .status.SUCCESS, .status.DELIVERED { color: #62e3b4; background: #123a35; }
-    .status.PENDING { color: #b7c8ff; }
-    .status.EXPIRED, .status.FAILED, .status.FAILED_NETWORK { color: #ff8792; background: #3b1b22; }
-    .actions { display: flex; gap: 8px; flex-wrap: wrap; }
-    .small { font-size: 11px; }
-    .empty { padding: 25px; text-align: center; color: var(--muted); }
-    .hidden { display: none !important; }
-    .toolbar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
-    .toolbar input, .toolbar select { background: #0d1526; border: 1px solid var(--line); border-radius: 8px; padding: 9px 12px; color: white; }
-    .appcard {
-      background: #0d1526;
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      padding: 18px;
-      margin-bottom: 14px;
+    ::-webkit-scrollbar { width: 7px; height: 7px; }
+    ::-webkit-scrollbar-track { background: #060a14; }
+    ::-webkit-scrollbar-thumb { background: #1e2d4a; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #334e7d; }
+
+    .nav-item.active {
+      background: linear-gradient(90deg, rgba(109, 140, 255, 0.18), rgba(109, 140, 255, 0.04));
+      color: #ffffff;
+      border-left: 3px solid #6d8cff;
+      box-shadow: 0 4px 20px -4px rgba(109, 140, 255, 0.25);
     }
-    .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: grid; place-items: center; padding: 18px; z-index: 10; }
-    .modalbox { max-width: 540px; width: 100%; background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 22px; }
-    .modalbox input { width: 100%; margin: 6px 0 14px; background: #0d1526; border: 1px solid var(--line); border-radius: 8px; padding: 10px; color: white; }
-    .keybox { word-break: break-all; background: #070d18; padding: 10px 12px; border-radius: 8px; margin: 8px 0; color: #a8f0d6; font-family: monospace; border: 1px solid #1a2744; }
-    .qr-modal-img { display: block; margin: 14px auto; width: 220px; height: 220px; background: white; padding: 8px; border-radius: 12px; }
+    .kpi-card {
+      background: linear-gradient(180deg, rgba(19, 29, 54, 0.75) 0%, rgba(13, 20, 38, 0.92) 100%);
+      border: 1px solid rgba(109, 140, 255, 0.16);
+      transition: transform 0.18s ease, border-color 0.18s ease;
+    }
+    .kpi-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(109, 140, 255, 0.38);
+    }
+    .glass-panel {
+      background: rgba(13, 20, 38, 0.88);
+      backdrop-filter: blur(12px);
+      border: 1px solid #1e2d4a;
+    }
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+    }
+    .status-SUCCESS, .status-DELIVERED {
+      background: rgba(40, 201, 149, 0.14);
+      color: #34d399;
+      border: 1px solid rgba(40, 201, 149, 0.32);
+    }
+    .status-PENDING {
+      background: rgba(245, 158, 11, 0.14);
+      color: #fbbf24;
+      border: 1px solid rgba(245, 158, 11, 0.32);
+    }
+    .status-EXPIRED, .status-FAILED, .status-FAILED_NETWORK {
+      background: rgba(244, 63, 94, 0.14);
+      color: #fb7185;
+      border: 1px solid rgba(244, 63, 94, 0.32);
+    }
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.45; transform: scale(1.25); }
+    }
+    .pulse-dot { animation: pulse-dot 2s infinite; }
   </style>
 </head>
-<body>
-<div class="shell">
-  <aside class="side">
-    <div class="brand">VEX <span>PAY</span></div>
-    <nav class="nav">
-      <button class="active" data-page="overview">▦ Overview</button>
-      <button data-page="orders">⇄ Orders & Transactions</button>
-      <button data-page="apps">▣ Applications</button>
-      <button data-page="events">⌁ Webhooks</button>
-      <button data-page="logs">☷ Activity Logs</button>
-      <button data-page="settings">⚙ Settings</button>
-      <a href="/docs" target="_blank" style="text-decoration: none;">
-        <button type="button">⌘ Documentation ↗</button>
-      </a>
-    </nav>
+<body class="min-h-screen flex flex-col lg:flex-row">
+
+  <!-- SIDEBAR NAVIGATION -->
+  <aside class="w-full lg:w-64 lg:min-h-screen bg-[#090f1e] border-b lg:border-b-0 lg:border-r border-[#1e2d4a] flex flex-col justify-between shrink-0">
+    <div class="p-5">
+      <!-- Brand Header -->
+      <div class="flex items-center justify-between lg:justify-start gap-3 mb-7">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#6d8cff] via-[#4c6ef5] to-[#28c995] flex items-center justify-center font-black text-[#060a14] text-base shadow-lg shadow-[#6d8cff]/20">
+            VX
+          </div>
+          <div>
+            <div class="text-lg font-extrabold tracking-wider text-white leading-none">
+              VEX <span class="text-[#6d8cff]">PAY</span>
+            </div>
+            <div class="text-[11px] text-slate-400 font-medium mt-1">UPI Gateway Cloud v2.0</div>
+          </div>
+        </div>
+        <button id="mobileMenuBtn" type="button" class="lg:hidden px-3 py-1.5 rounded-lg bg-[#131d36] border border-[#283a5e] text-xs font-semibold text-slate-200">
+          Menu ▾
+        </button>
+      </div>
+
+      <!-- Navigation Links -->
+      <nav id="sidebarNav" class="space-y-1.5">
+        <button type="button" data-page="overview" class="nav-item active w-full flex items-center justify-between px-3.5 py-2.5 rounded-r-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-[#131d36] transition">
+          <span class="flex items-center gap-2.5">
+            <span>▦</span>
+            <span>Dashboard Overview</span>
+          </span>
+          <span class="text-[10px] px-1.5 py-0.5 rounded bg-[#6d8cff]/20 text-[#6d8cff]">Live</span>
+        </button>
+
+        <button type="button" data-page="orders" class="nav-item w-full flex items-center justify-between px-3.5 py-2.5 rounded-r-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-[#131d36] transition">
+          <span class="flex items-center gap-2.5">
+            <span>⇄</span>
+            <span>Orders &amp; Transactions</span>
+          </span>
+          <span id="navOrderBadge" class="text-[10px] px-1.5 py-0.5 rounded bg-[#152238] text-slate-300 mono">0</span>
+        </button>
+
+        <button type="button" data-page="apps" class="nav-item w-full flex items-center justify-between px-3.5 py-2.5 rounded-r-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-[#131d36] transition">
+          <span class="flex items-center gap-2.5">
+            <span>▣</span>
+            <span>Applications &amp; Keys</span>
+          </span>
+          <span id="navAppBadge" class="text-[10px] px-1.5 py-0.5 rounded bg-[#152238] text-slate-300 mono">0</span>
+        </button>
+
+        <button type="button" data-page="events" class="nav-item w-full flex items-center justify-between px-3.5 py-2.5 rounded-r-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-[#131d36] transition">
+          <span class="flex items-center gap-2.5">
+            <span>⌁</span>
+            <span>Webhook Dispatches</span>
+          </span>
+          <span id="navWebhookBadge" class="text-[10px] px-1.5 py-0.5 rounded bg-[#152238] text-slate-300 mono">0</span>
+        </button>
+
+        <button type="button" data-page="logs" class="nav-item w-full flex items-center justify-between px-3.5 py-2.5 rounded-r-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-[#131d36] transition">
+          <span class="flex items-center gap-2.5">
+            <span>☷</span>
+            <span>Activity Logs</span>
+          </span>
+        </button>
+
+        <button type="button" data-page="settings" class="nav-item w-full flex items-center justify-between px-3.5 py-2.5 rounded-r-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-[#131d36] transition">
+          <span class="flex items-center gap-2.5">
+            <span>⚙</span>
+            <span>Gateway Settings</span>
+          </span>
+        </button>
+
+        <div class="pt-3 mt-3 border-t border-[#1e2d4a]">
+          <button id="openDocsBtn" type="button" class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold bg-[#121d36] hover:bg-[#192848] text-[#6d8cff] border border-[#6d8cff]/25 transition">
+            <span class="flex items-center gap-2">
+              <span>⌘</span>
+              <span>Developer &amp; AI Docs</span>
+            </span>
+            <span>↗</span>
+          </button>
+        </div>
+      </nav>
+    </div>
+
+    <!-- Bottom Sidebar Status Card -->
+    <div class="hidden lg:block p-4 m-4 rounded-xl bg-[#0d1528] border border-[#1e2d4a] space-y-2">
+      <div class="flex items-center justify-between text-[11px]">
+        <span class="text-slate-400 font-medium">Auto-Sync Engine</span>
+        <span class="text-[#28c995] font-bold flex items-center gap-1">
+          <span class="w-1.5 h-1.5 rounded-full bg-[#28c995] pulse-dot"></span> Active
+        </span>
+      </div>
+      <div class="text-[11px] text-slate-400 leading-relaxed">
+        Dynamic Paise Slots <code class="text-white">0.01–0.30</code> · 5m Expiry · Instant UTR Verification
+      </div>
+    </div>
   </aside>
 
-  <main class="main">
-    <header class="top">
+  <!-- MAIN CONTENT AREA -->
+  <main class="flex-1 min-w-0 p-4 sm:p-6 lg:p-8 space-y-6">
+
+    <!-- TOP HEADER BAR -->
+    <header class="glass-panel rounded-2xl p-4 sm:px-6 flex flex-wrap items-center justify-between gap-4">
       <div>
-        <h1 id="title">Dashboard Overview</h1>
-        <div class="muted small">Auto Direct SUCCESS · Duplicate Filter Active · Full App Controls</div>
+        <div class="flex items-center gap-2.5">
+          <h1 id="title" class="text-xl sm:text-2xl font-extrabold text-white tracking-tight">Dashboard Overview</h1>
+          <span id="lastSyncBadge" class="hidden sm:inline-block text-[11px] px-2.5 py-0.5 rounded-full bg-[#15223b] text-slate-300 border border-[#263859] mono">Live</span>
+        </div>
+        <p class="text-xs text-slate-400 mt-0.5">Auto Direct SUCCESS · Duplicate UTR Filter Active · Real-Time Cloud Firestore Sync</p>
       </div>
-      <div class="actions">
-        <span class="pill" id="gmailState">● Gmail not connected</span>
-        <button class="secondary" id="connectBtn">Connect Gmail</button>
-        <button class="secondary" id="syncBtn">Sync Now</button>
+
+      <div class="flex items-center gap-2.5 flex-wrap">
+        <div id="gmailState" class="px-3 py-1.5 rounded-full text-xs font-semibold bg-[#131d35] border border-[#263859] text-slate-300 flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+          <span>Checking Gmail...</span>
+        </div>
+
+        <button id="testOrderBtn" type="button" class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-gradient-to-r from-[#28c995] to-[#1da87a] hover:opacity-95 text-[#060a14] font-bold shadow transition">
+          ⚡ Test QR Order
+        </button>
+
+        <button id="connectBtn" type="button" class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-[#16223d] hover:bg-[#1e2f52] text-slate-200 border border-[#2a3c63] transition">
+          Connect Gmail
+        </button>
+
+        <button id="syncBtn" type="button" class="px-4 py-2 rounded-xl text-xs font-semibold bg-[#6d8cff] hover:bg-[#5a7aff] text-white shadow shadow-[#6d8cff]/25 transition">
+          ↻ Sync Now
+        </button>
       </div>
     </header>
 
-    <!-- OVERVIEW -->
-    <section id="page-overview">
-      <div class="cards">
-        <div class="card">
-          <div class="label">Total Processed Value</div>
-          <div class="metric" id="totalValue">₹0.00</div>
-        </div>
-        <div class="card">
-          <div class="label">Total Orders</div>
-          <div class="metric" id="totalOrders">0</div>
-        </div>
-        <div class="card">
-          <div class="label">Auto-Verified SUCCESS</div>
-          <div class="metric" style="color:#28c995;" id="verifiedCount">0</div>
-        </div>
-        <div class="card">
-          <div class="label">Dynamic Slot Pool</div>
-          <div class="metric" style="color:#6d8cff;">0.01 – 0.30</div>
-        </div>
-      </div>
+    <!-- ==================== PAGE 1: OVERVIEW ==================== -->
+    <section id="page-overview" class="space-y-6">
 
-      <div class="panel">
-        <h2>Live Transactions</h2>
-        <div class="tablewrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Order ID</th>
-                <th>App</th>
-                <th>App Order ID</th>
-                <th>Payable (Slot)</th>
-                <th>UTR / Txn ID</th>
-                <th>Status</th>
-                <th>Created</th>
-              </tr>
-            </thead>
-            <tbody id="recentRows"></tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-
-    <!-- DETAILED ORDERS TABLE -->
-    <section id="page-orders" class="hidden">
-      <div class="toolbar">
-        <input id="orderSearch" placeholder="Search Order ID, App Order ID, UTR, Txn ID, Email..." style="min-width: 320px;" />
-        <select id="orderStatus">
-          <option value="">All statuses</option>
-          <option>SUCCESS</option>
-          <option>PENDING</option>
-          <option>EXPIRED</option>
-        </select>
-        <button class="secondary" id="csvBtn">Export CSV</button>
-      </div>
-
-      <div class="panel">
-        <h2>All Orders (Comprehensive Details)</h2>
-        <div class="tablewrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Order ID</th>
-                <th>App</th>
-                <th>App Order ID</th>
-                <th>Email Order ID</th>
-                <th>Base Amt</th>
-                <th>Payable Amt</th>
-                <th>Slot</th>
-                <th>UTR No.</th>
-                <th>Txn ID</th>
-                <th>Bank / Sender Email</th>
-                <th>Status</th>
-                <th>Created At</th>
-                <th>Verified At</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody id="orderRows"></tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-
-    <!-- APPLICATIONS -->
-    <section id="page-apps" class="hidden">
-      <div class="panel">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
-          <div>
-            <h2>Registered Applications</h2>
-            <div class="muted small">Manage API keys, Webhook URLs, Webhook Secrets, and app status</div>
+      <!-- 4 KPI METRIC CARDS -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+        <!-- Card 1 -->
+        <div class="kpi-card rounded-2xl p-5">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Verified Revenue</span>
+            <span class="w-8 h-8 rounded-lg bg-[#28c995]/15 text-[#28c995] flex items-center justify-center font-bold text-sm">₹</span>
           </div>
-          <button id="addApp">＋ Register New App</button>
+          <div id="totalValue" class="text-2xl sm:text-3xl font-extrabold text-white mt-2 mono">₹0.00</div>
+          <div class="flex items-center justify-between mt-3 pt-2.5 border-t border-[#1e2d4a]/80 text-[11px] text-slate-400">
+            <span>Gross Initiated:</span>
+            <span id="grossInitiatedValue" class="text-slate-200 font-semibold mono">₹0.00</span>
+          </div>
         </div>
-        <div id="appList"></div>
-      </div>
-    </section>
 
-    <!-- WEBHOOKS -->
-    <section id="page-events" class="hidden">
-      <div class="panel">
-        <h2>Webhook Dispatch History</h2>
-        <div class="tablewrap">
-          <table>
+        <!-- Card 2 -->
+        <div class="kpi-card rounded-2xl p-5">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Total Orders</span>
+            <span class="w-8 h-8 rounded-lg bg-[#6d8cff]/15 text-[#6d8cff] flex items-center justify-center font-bold text-sm">#</span>
+          </div>
+          <div id="totalOrders" class="text-2xl sm:text-3xl font-extrabold text-white mt-2 mono">0</div>
+          <div class="flex items-center gap-3 mt-3 pt-2.5 border-t border-[#1e2d4a]/80 text-[11px]">
+            <span class="text-amber-400 font-medium"><strong id="pendingCountMini">0</strong> Pending</span>
+            <span class="text-rose-400 font-medium"><strong id="expiredCountMini">0</strong> Expired</span>
+          </div>
+        </div>
+
+        <!-- Card 3 -->
+        <div class="kpi-card rounded-2xl p-5">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Auto-Verified SUCCESS</span>
+            <span class="w-8 h-8 rounded-lg bg-emerald-500/15 text-emerald-400 flex items-center justify-center font-bold text-sm">✓</span>
+          </div>
+          <div id="verifiedCount" class="text-2xl sm:text-3xl font-extrabold text-[#28c995] mt-2 mono">0</div>
+          <div class="flex items-center justify-between mt-3 pt-2.5 border-t border-[#1e2d4a]/80 text-[11px] text-slate-400">
+            <span>Verification Rate:</span>
+            <span id="successRateLabel" class="text-[#28c995] font-bold mono">0%</span>
+          </div>
+        </div>
+
+        <!-- Card 4 -->
+        <div class="kpi-card rounded-2xl p-5">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Dynamic Slot Pool</span>
+            <span class="w-8 h-8 rounded-lg bg-purple-500/15 text-purple-400 flex items-center justify-center font-bold text-xs">.30</span>
+          </div>
+          <div class="text-2xl sm:text-3xl font-extrabold text-[#6d8cff] mt-2 mono">0.01 – 0.30</div>
+          <div class="flex items-center justify-between mt-3 pt-2.5 border-t border-[#1e2d4a]/80 text-[11px] text-slate-400">
+            <span>Active Locked Slots:</span>
+            <span id="activeSlotsLabel" class="text-white font-semibold mono">0 / 30 Busy</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- LIVE 30-SLOT PAISA VISUALIZER & APP BREAKDOWN -->
+      <div class="grid grid-cols-1 xl:grid-cols-12 gap-6">
+        <!-- Slot Occupancy Grid -->
+        <div class="xl:col-span-7 glass-panel rounded-2xl p-5 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h2 class="text-sm font-bold text-white">Live Dynamic Paise Slot Radar (.01 to .30)</h2>
+              <p class="text-[11px] text-slate-400">Har naye order ko unique paise slot milta hai aur 5 minute baad auto-release hota hai</p>
+            </div>
+            <div class="flex items-center gap-3 text-[11px]">
+              <span class="flex items-center gap-1 text-emerald-400"><span class="w-2 h-2 rounded-full bg-emerald-400"></span> Free</span>
+              <span class="flex items-center gap-1 text-amber-400"><span class="w-2 h-2 rounded-full bg-amber-400"></span> Active Pending</span>
+            </div>
+          </div>
+          <div id="slotRadarGrid" class="grid grid-cols-6 sm:grid-cols-10 gap-2 pt-1"></div>
+        </div>
+
+        <!-- Per-App Revenue Summary -->
+        <div class="xl:col-span-5 glass-panel rounded-2xl p-5 space-y-3">
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="text-sm font-bold text-white">Per-App Revenue Breakdown</h2>
+              <p class="text-[11px] text-slate-400">Verified collection across connected merchant apps</p>
+            </div>
+            <button type="button" id="quickAddAppBtn" class="text-xs font-semibold text-[#6d8cff] hover:underline">+ New App</button>
+          </div>
+          <div id="appRevenueMiniList" class="space-y-2 max-h-40 overflow-y-auto pr-1"></div>
+        </div>
+      </div>
+
+      <!-- LIVE TRANSACTIONS TABLE -->
+      <div class="glass-panel rounded-2xl p-5 space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 class="text-base font-bold text-white">Live Transactions Stream</h2>
+            <p class="text-xs text-slate-400">Recent orders with instant QR preview and UTR verification</p>
+          </div>
+          <button type="button" id="viewAllOrdersBtn" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#15223b] hover:bg-[#1e2f52] text-slate-200 border border-[#27395c] transition">
+            View All Orders →
+          </button>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse whitespace-nowrap text-xs">
             <thead>
-              <tr>
-                <th>Event ID</th>
-                <th>Type</th>
-                <th>App ID</th>
-                <th>Status</th>
-                <th>Dispatched At</th>
+              <tr class="bg-[#090f1e] text-slate-400 border-b border-[#1e2d4a] uppercase text-[11px] tracking-wider">
+                <th class="py-3 px-3.5">Order ID</th>
+                <th class="py-3 px-3.5">Application</th>
+                <th class="py-3 px-3.5">Merchant Order ID</th>
+                <th class="py-3 px-3.5">Payable (Slot)</th>
+                <th class="py-3 px-3.5">UTR / Bank Ref</th>
+                <th class="py-3 px-3.5">Status</th>
+                <th class="py-3 px-3.5">Created</th>
+                <th class="py-3 px-3.5 text-right">QR</th>
               </tr>
             </thead>
-            <tbody id="eventRows"></tbody>
+            <tbody id="recentRows" class="divide-y divide-[#1e2d4a]/60"></tbody>
           </table>
         </div>
       </div>
     </section>
 
-    <!-- LOGS -->
-    <section id="page-logs" class="hidden">
-      <div class="panel">
-        <h2>Activity Logs</h2>
-        <div id="logList"></div>
+    <!-- ==================== PAGE 2: ORDERS & TRANSACTIONS ==================== -->
+    <section id="page-orders" class="hidden space-y-5">
+      <div class="glass-panel rounded-2xl p-4 flex flex-wrap items-center justify-between gap-3">
+        <div class="flex flex-wrap items-center gap-2.5 flex-1 min-w-[260px]">
+          <input id="orderSearch" type="text" placeholder="🔍 Search Order ID, App Order ID, UTR, Amount, App Name..." class="flex-1 min-w-[240px] px-3.5 py-2 rounded-xl bg-[#070b16] border border-[#27395c] text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#6d8cff]" />
+          <select id="orderStatus" class="px-3.5 py-2 rounded-xl bg-[#070b16] border border-[#27395c] text-xs text-white focus:outline-none focus:border-[#6d8cff]">
+            <option value="">All Statuses</option>
+            <option value="SUCCESS">SUCCESS</option>
+            <option value="PENDING">PENDING</option>
+            <option value="EXPIRED">EXPIRED</option>
+          </select>
+        </div>
+        <button id="csvBtn" type="button" class="px-4 py-2 rounded-xl text-xs font-semibold bg-[#162340] hover:bg-[#6d8cff] text-white border border-[#2a3c63] transition">
+          ⬇ Export CSV
+        </button>
+      </div>
+
+      <div class="glass-panel rounded-2xl p-5 space-y-4">
+        <div class="flex items-center justify-between">
+          <h2 class="text-base font-bold text-white">All Orders (Comprehensive Ledger)</h2>
+          <span id="filteredOrdersCount" class="text-xs text-slate-400 mono">0 records</span>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse whitespace-nowrap text-xs">
+            <thead>
+              <tr class="bg-[#090f1e] text-slate-400 border-b border-[#1e2d4a] uppercase text-[11px] tracking-wider">
+                <th class="py-3 px-3">Order ID</th>
+                <th class="py-3 px-3">App</th>
+                <th class="py-3 px-3">App Order ID</th>
+                <th class="py-3 px-3">Customer</th>
+                <th class="py-3 px-3">Base Amt</th>
+                <th class="py-3 px-3">Payable Amt</th>
+                <th class="py-3 px-3">Slot</th>
+                <th class="py-3 px-3">UTR No.</th>
+                <th class="py-3 px-3">Status</th>
+                <th class="py-3 px-3">Created At</th>
+                <th class="py-3 px-3">Verified At</th>
+                <th class="py-3 px-3 text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody id="orderRows" class="divide-y divide-[#1e2d4a]/60"></tbody>
+          </table>
+        </div>
       </div>
     </section>
 
-    <!-- SETTINGS -->
-    <section id="page-settings" class="hidden">
-      <div class="panel">
-        <h2>Gmail Connection</h2>
-        <p id="gmailDetails" class="muted">Checking connection status...</p>
-        <button id="connectBtn2" style="margin-top:12px;">Connect Gmail Account</button>
+    <!-- ==================== PAGE 3: APPLICATIONS ==================== -->
+    <section id="page-apps" class="hidden space-y-5">
+      <div class="glass-panel rounded-2xl p-5 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 class="text-base font-bold text-white">Registered Merchant Applications</h2>
+          <p class="text-xs text-slate-400">Create separate API keys &amp; Webhook URLs for each website or Flutter mobile app</p>
+        </div>
+        <button id="addApp" type="button" class="px-4 py-2.5 rounded-xl text-xs font-bold bg-gradient-to-r from-[#6d8cff] to-[#4c6ef5] hover:opacity-95 text-white shadow-lg shadow-[#6d8cff]/20 transition">
+          ＋ Register New App
+        </button>
+      </div>
+
+      <div id="appList" class="grid grid-cols-1 lg:grid-cols-2 gap-4"></div>
+    </section>
+
+    <!-- ==================== PAGE 4: WEBHOOKS ==================== -->
+    <section id="page-events" class="hidden space-y-5">
+      <div class="glass-panel rounded-2xl p-5 space-y-4">
+        <div>
+          <h2 class="text-base font-bold text-white">Webhook Dispatch History</h2>
+          <p class="text-xs text-slate-400">Real-time delivery logs for <code>payment.success</code> POST callbacks</p>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse whitespace-nowrap text-xs">
+            <thead>
+              <tr class="bg-[#090f1e] text-slate-400 border-b border-[#1e2d4a] uppercase text-[11px] tracking-wider">
+                <th class="py-3 px-3.5">Event ID</th>
+                <th class="py-3 px-3.5">Event Type</th>
+                <th class="py-3 px-3.5">App ID</th>
+                <th class="py-3 px-3.5">Order ID</th>
+                <th class="py-3 px-3.5">Amount</th>
+                <th class="py-3 px-3.5">Delivery Status</th>
+                <th class="py-3 px-3.5">Dispatched At</th>
+              </tr>
+            </thead>
+            <tbody id="eventRows" class="divide-y divide-[#1e2d4a]/60"></tbody>
+          </table>
+        </div>
       </div>
     </section>
+
+    <!-- ==================== PAGE 5: ACTIVITY LOGS ==================== -->
+    <section id="page-logs" class="hidden space-y-5">
+      <div class="glass-panel rounded-2xl p-5 space-y-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-base font-bold text-white">System Activity &amp; Audit Logs</h2>
+            <p class="text-xs text-slate-400">Live verification events, app creation/deletion records, and OAuth connections</p>
+          </div>
+        </div>
+        <div id="logList" class="space-y-2.5"></div>
+      </div>
+    </section>
+
+    <!-- ==================== PAGE 6: SETTINGS ==================== -->
+    <section id="page-settings" class="hidden space-y-5">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <div class="glass-panel rounded-2xl p-6 space-y-4">
+          <div class="flex items-center justify-between">
+            <h2 class="text-base font-bold text-white">Gmail OAuth 2.0 Verification Engine</h2>
+            <span class="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-[#28c995]/15 text-[#28c995]">Read-Only Scope</span>
+          </div>
+          <p id="gmailDetails" class="text-xs text-slate-300 leading-relaxed">Checking connection status...</p>
+          <div class="pt-2 flex flex-wrap gap-2.5">
+            <button id="connectBtn2" type="button" class="px-4 py-2.5 rounded-xl text-xs font-bold bg-[#6d8cff] hover:bg-[#5879ff] text-white transition">
+              Connect / Reconnect Gmail Account
+            </button>
+            <button id="manualSyncSettingsBtn" type="button" class="px-4 py-2.5 rounded-xl text-xs font-semibold bg-[#15223b] hover:bg-[#1e2f52] text-slate-200 border border-[#27395c] transition">
+              Run Manual Gmail Scan
+            </button>
+          </div>
+        </div>
+
+        <div class="glass-panel rounded-2xl p-6 space-y-3">
+          <h2 class="text-base font-bold text-white">Gateway Architecture Endpoints</h2>
+          <div class="space-y-2 text-xs">
+            <div class="p-3 rounded-xl bg-[#070b16] border border-[#1e2d4a] flex items-center justify-between gap-2">
+              <div>
+                <div class="text-slate-400 text-[11px]">Create Order Endpoint</div>
+                <code class="text-sky-300">POST /api/v1/orders</code>
+              </div>
+              <button type="button" data-copy-text="/api/v1/orders" class="copy-pill px-2.5 py-1 rounded bg-[#15223b] text-slate-200 hover:bg-[#6d8cff] text-[11px]">Copy</button>
+            </div>
+            <div class="p-3 rounded-xl bg-[#070b16] border border-[#1e2d4a] flex items-center justify-between gap-2">
+              <div>
+                <div class="text-slate-400 text-[11px]">Order Status &amp; Auto-Sync Endpoint</div>
+                <code class="text-emerald-300">GET /api/order-status?orderId=...</code>
+              </div>
+              <button type="button" data-copy-text="/api/order-status" class="copy-pill px-2.5 py-1 rounded bg-[#15223b] text-slate-200 hover:bg-[#6d8cff] text-[11px]">Copy</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
   </main>
-</div>
 
-<!-- MODAL -->
-<div id="modal" class="modal hidden">
-  <div class="modalbox" id="modalContent"></div>
-</div>
+  <!-- UNIVERSAL MODAL -->
+  <div id="modal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div id="modalContent" class="w-full max-w-lg bg-[#0f1629] border border-[#293d66] rounded-2xl p-6 shadow-2xl space-y-4"></div>
+  </div>
 
-<script>
-let state = { apps: [], orders: [], events: [], logs: [], gmail: { connected: false } };
-let adminKey = sessionStorage.getItem('vexAdminKey') || '';
+  <!-- TOAST NOTIFICATION -->
+  <div id="toast" class="fixed bottom-5 right-5 z-50 hidden px-4 py-3 rounded-xl bg-[#28c995] text-[#060a14] font-bold text-xs shadow-2xl">
+    Action completed
+  </div>
 
-const $ = id => document.getElementById(id);
-const money = n => '₹' + Number(n || 0).toFixed(2);
-const dt = s => s ? new Date(typeof s === 'number' ? s : s).toLocaleString() : '—';
+  <script>
+    let state = {
+      apps: [],
+      orders: [],
+      events: [],
+      logs: [],
+      gmail: { connected: false }
+    };
 
-async function api(url, opts = {}) {
-  const r = await fetch(url, {
-    ...opts,
-    headers: { 'content-type': 'application/json', 'x-dashboard-admin-key': adminKey, ...(opts.headers || {}) }
-  });
-  const d = await r.json().catch(() => ({}));
-  if (r.status === 401) throw new Error('Dashboard admin key required');
-  if (!r.ok) throw new Error(d.error || 'Request failed');
-  return d;
-}
+    let adminKey = '';
+    try { adminKey = sessionStorage.getItem('vexAdminKey') || ''; } catch (_) {}
 
-// Instant Cache Loader
-function loadCachedState() {
-  const cached = localStorage.getItem('vex_cached_dashboard');
-  if (cached) {
-    try {
-      state = JSON.parse(cached);
-      render();
-    } catch(e) {}
-  }
-}
+    const $ = (id) => document.getElementById(id);
+    const API_BASE = (window.location.hostname.endsWith('netlify.app') || window.location.hostname.endsWith('vercel.app')) ? '' : 'https://vexpay-seven.vercel.app';
+    const apiUrl = (ep) => API_BASE + ep;
+    const money = (n) => '₹' + Number(n || 0).toFixed(2);
+    const dt = (s) => s ? new Date(typeof s === 'number' ? s : s).toLocaleString() : '—';
 
-async function refresh() {
-  try {
-    const data = await api('/api/dashboard');
-    if (data && typeof data === 'object') {
-      state = data;
-      localStorage.setItem('vex_cached_dashboard', JSON.stringify(data));
-      render();
+    function showToast(msg, isError = false) {
+      const t = $('toast');
+      if (!t) return;
+      t.textContent = msg;
+      t.className = isError
+        ? 'fixed bottom-5 right-5 z-50 px-4 py-3 rounded-xl bg-rose-500 text-white font-bold text-xs shadow-2xl'
+        : 'fixed bottom-5 right-5 z-50 px-4 py-3 rounded-xl bg-[#28c995] text-[#060a14] font-bold text-xs shadow-2xl';
+      clearTimeout(window.__vexToast);
+      window.__vexToast = setTimeout(() => t.classList.add('hidden'), 2600);
     }
-  } catch(e) {
-    if (e.message.includes('admin key')) {
-      const k = prompt('Enter DASHBOARD_ADMIN_KEY:');
-      if (k !== null) {
-        adminKey = k;
-        sessionStorage.setItem('vexAdminKey', k);
-        refresh();
+
+    function copyToClipboard(text, label = 'Copied to clipboard!') {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => showToast(label)).catch(() => fallbackCopy(text, label));
+      } else {
+        fallbackCopy(text, label);
       }
     }
-  }
-}
 
-function render() {
-  const orders = state.orders || [];
-  const paid = orders.filter(o => o.status === 'SUCCESS');
+    function fallbackCopy(text, label) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); } catch (_) {}
+      document.body.removeChild(ta);
+      showToast(label);
+    }
 
-  $('totalValue').textContent = money(orders.reduce((s, o) => s + Number(o.payableAmount || 0), 0));
-  $('totalOrders').textContent = orders.length;
-  $('verifiedCount').textContent = paid.length;
-  $('gmailState').innerHTML = (state.gmail && state.gmail.connected) 
-    ? '<span class="dot"></span> Gmail connected' 
-    : '● Gmail not connected';
+    window.copyTextGlobal = (text, label) => copyToClipboard(text, label);
 
-  $('gmailDetails').textContent = (state.gmail && state.gmail.connected)
-    ? 'Gmail read-only sync connected. Background scans run every 1 minute.'
-    : 'Gmail is not connected. Connect your Google account to auto-detect Paytm emails.';
-
-  // Recent rows
-  $('recentRows').innerHTML = orders.slice(0, 8).map(o => `
-    <tr>
-      <td><strong>${o.orderId}</strong></td>
-      <td>${o.appName || 'Apex Gaming'}</td>
-      <td>${o.appOrderId || o.orderId}</td>
-      <td><strong>${money(o.payableAmount)}</strong> <span class="muted small">(Slot ${o.slotIndex || 1})</span></td>
-      <td>${o.utr || o.transactionId || '—'}</td>
-      <td><span class="status ${o.status}">${o.status}</span></td>
-      <td>${dt(o.createdAtMs || o.createdAt)}</td>
-    </tr>
-  `).join('') || '<tr><td colspan="7" class="empty">No orders yet</td></tr>';
-
-  // Comprehensive Detailed Orders List
-  const q = ($('orderSearch')?.value || '').toLowerCase();
-  const filter = $('orderStatus')?.value || '';
-
-  $('orderRows').innerHTML = orders.filter(o => (!filter || o.status === filter) && JSON.stringify(o).toLowerCase().includes(q)).map(o => `
-    <tr>
-      <td><strong>${o.orderId}</strong></td>
-      <td>${o.appName || 'Apex Gaming'}</td>
-      <td>${o.appOrderId || o.orderId}</td>
-      <td>${o.emailOrderId || '—'}</td>
-      <td>${money(o.originalAmount || o.payableAmount)}</td>
-      <td style="color:#6d8cff; font-weight:700;">${money(o.payableAmount)}</td>
-      <td>Slot ${o.slotIndex || 1}</td>
-      <td><strong style="color:#28c995;">${o.utr || '—'}</strong></td>
-      <td>${o.transactionId || '—'}</td>
-      <td>${o.bankEmailId || o.sender || '—'}</td>
-      <td><span class="status ${o.status}">${o.status}</span></td>
-      <td>${dt(o.createdAtMs || o.createdAt)}</td>
-      <td>${dt(o.verifiedAtMs || o.verifiedAt)}</td>
-      <td>
-        <button class="secondary small" onclick="viewOrderQR('${o.orderId}')">View QR</button>
-      </td>
-    </tr>
-  `).join('') || '<tr><td colspan="14" class="empty">No matching orders found</td></tr>';
-
-  // Applications List
-  $('appList').innerHTML = (state.apps || []).map(a => `
-    <div class="appcard">
-      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
-        <div>
-          <strong style="font-size:16px;">${a.name}</strong>
-          ${a.active ? '<span class="status SUCCESS" style="margin-left:8px;">ACTIVE</span>' : '<span class="status EXPIRED" style="margin-left:8px;">DISABLED</span>'}
-        </div>
-        <div class="muted small">App ID: <code>${a.id}</code> · Created ${dt(a.createdAt)}</div>
-      </div>
-
-      <div style="margin: 8px 0;">
-        <div class="muted small">API Key: <code style="color:#a8f0d6;">${a.apiKeyHint}</code></div>
-        <div class="muted small" style="margin-top:4px;">
-          Webhook Secret: <code style="color:#fde68a;">${a.webhookSecret ? a.webhookSecret : '(Configured/Hidden)'}</code>
-          ${a.webhookSecret ? `<button class="secondary small" style="margin-left:6px; padding:2px 8px;" onclick="navigator.clipboard.writeText('${a.webhookSecret}'); alert('Webhook Secret copied!');">Copy Secret</button>` : ''}
-        </div>
-        <div class="muted small" style="margin-top:4px;">Webhook URL: <code>${a.webhookUrl || 'Not configured'}</code></div>
-      </div>
-
-      <div class="actions" style="margin-top:14px;">
-        <button class="secondary small" onclick="editWebhook('${a.id}')">✏️ Edit Webhook</button>
-        <button class="secondary small" onclick="toggleApp('${a.id}', ${!a.active})">${a.active ? '⏸️ Disable App' : '▶️ Enable App'}</button>
-        <button class="secondary small" onclick="rotateCredentials('${a.id}')">🔄 Rotate API Key & Secret</button>
-        <button class="danger small" onclick="deleteApp('${a.id}')">🗑️ Delete App</button>
-      </div>
-    </div>
-  `).join('') || '<div class="empty">No applications registered yet. Click "＋ Register New App" to get started.</div>';
-
-  // Webhook Events
-  $('eventRows').innerHTML = (state.events || []).slice(0, 50).map(e => {
-    const eventId = e.eventId || e.id;
-    const appId = e.appId || e.app_id || 'APEX_GAMING_01';
-    const status = e.deliveryStatus || e.delivery_status || e.status || 'DELIVERED';
-    const time = e.dispatchedAt || e.dispatched_at || e.createdAt || e.timestamp;
-
-    return `
-      <tr>
-        <td><strong>${eventId}</strong></td>
-        <td>${e.type || 'payment.success'}</td>
-        <td>${appId}</td>
-        <td><span class="status ${status}">${status}</span></td>
-        <td>${dt(time)}</td>
-      </tr>
-    `;
-  }).join('') || '<tr><td colspan="5" class="empty">No webhooks dispatched yet</td></tr>';
-
-  // Logs
-  $('logList').innerHTML = (state.logs || []).slice(0, 50).map(l => `
-    <div style="background:#0b1120; border:1px solid var(--line); border-radius:8px; padding:8px 12px; margin-bottom:6px;">
-      <strong>${(l.type || 'INFO').toUpperCase()}: ${l.message}</strong>
-      <div class="muted small">${dt(l.at)}</div>
-    </div>
-  `).join('') || '<div class="empty">No activity logs</div>';
-}
-
-function page(name) {
-  document.querySelectorAll('[id^="page-"]').forEach(e => e.classList.add('hidden'));
-  $('page-' + name).classList.remove('hidden');
-  document.querySelectorAll('[data-page]').forEach(b => b.classList.toggle('active', b.dataset.page === name));
-  $('title').textContent = ({
-    overview: 'Dashboard Overview',
-    orders: 'Orders & Transactions',
-    apps: 'Applications',
-    events: 'Webhook Events',
-    logs: 'Activity Logs',
-    settings: 'Settings'
-  })[name];
-}
-
-document.querySelectorAll('[data-page]').forEach(b => b.onclick = () => page(b.dataset.page));
-$('connectBtn').onclick = $('connectBtn2').onclick = () => location.href = '/auth/google';
-
-$('syncBtn').onclick = async () => { 
-  const btn = $('syncBtn');
-  btn.textContent = 'Syncing...';
-  btn.disabled = true;
-  try {
-    await fetch('/api/sync').catch(() => {});
-    await refresh();
-  } finally {
-    btn.textContent = 'Sync Now';
-    btn.disabled = false;
-  }
-};
-
-$('orderSearch').oninput = render;
-$('orderStatus').onchange = render;
-
-// CREATE APP MODAL
-$('addApp').onclick = () => {
-  $('modalContent').innerHTML = `
-    <h2>Register Application</h2>
-    <p class="muted small">Generate dedicated API Key and Webhook Secret for your client app.</p>
-    <label class="small muted">Application Name</label>
-    <input id="newName" placeholder="My Gaming Store" />
-    <label class="small muted">Webhook URL (Optional)</label>
-    <input id="newHook" placeholder="http://localhost:4000/api/webhook/payment" />
-    <div class="actions">
-      <button id="createAppBtn">Create App & Credentials</button>
-      <button class="secondary" onclick="closeModal()">Cancel</button>
-    </div>
-  `;
-  $('modal').classList.remove('hidden');
-
-  $('createAppBtn').onclick = async () => {
-    try {
-      const d = await api('/api/admin/apps', {
-        method: 'POST',
-        body: JSON.stringify({ name: $('newName').value, webhookUrl: $('newHook').value })
+    async function api(url, opts = {}) {
+      const r = await fetch(apiUrl(url), {
+        ...opts,
+        headers: {
+          'content-type': 'application/json',
+          'x-dashboard-admin-key': adminKey,
+          ...(opts.headers || {})
+        }
       });
+      const d = await r.json().catch(() => ({}));
+      if (r.status === 401) throw new Error('Dashboard admin key required');
+      if (!r.ok) throw new Error(d.error || 'Request failed');
+      return d;
+    }
+
+    function loadCachedState() {
+      try {
+        const cached = localStorage.getItem('vex_cached_dashboard');
+        if (cached) {
+          state = JSON.parse(cached);
+          render();
+        }
+      } catch (_) {}
+    }
+
+    async function refresh() {
+      try {
+        const data = await api('/api/dashboard');
+        if (data && typeof data === 'object') {
+          state = data;
+          try { localStorage.setItem('vex_cached_dashboard', JSON.stringify(data)); } catch (_) {}
+          const badge = $('lastSyncBadge');
+          if (badge) badge.textContent = 'Updated ' + new Date().toLocaleTimeString();
+          render();
+        }
+      } catch (e) {
+        // Keep current/cached state if offline or previewing
+        render();
+      }
+    }
+
+    function render() {
+      const orders = state.orders || [];
+      const apps = state.apps || [];
+      const events = state.events || [];
+      const logs = state.logs || [];
+
+      const paidOrders = orders.filter((o) => o.status === 'SUCCESS');
+      const pendingOrders = orders.filter((o) => o.status === 'PENDING');
+      const expiredOrders = orders.filter((o) => o.status === 'EXPIRED');
+
+      const verifiedSum = paidOrders.reduce((s, o) => s + Number(o.payableAmount || 0), 0);
+      const grossSum = orders.reduce((s, o) => s + Number(o.payableAmount || 0), 0);
+      const rate = orders.length ? Math.round((paidOrders.length / orders.length) * 100) : 0;
+
+      $('totalValue').textContent = money(verifiedSum);
+      $('grossInitiatedValue').textContent = money(grossSum);
+      $('totalOrders').textContent = orders.length;
+      $('pendingCountMini').textContent = pendingOrders.length;
+      $('expiredCountMini').textContent = expiredOrders.length;
+      $('verifiedCount').textContent = paidOrders.length;
+      $('successRateLabel').textContent = rate + '%';
+
+      $('navOrderBadge').textContent = orders.length;
+      $('navAppBadge').textContent = apps.length;
+      $('navWebhookBadge').textContent = events.length;
+
+      // Active slots radar (1..30)
+      const nowMs = Date.now();
+      const busySlots = new Set();
+      pendingOrders.forEach((o) => {
+        if (!o.expiresAtMs || nowMs < o.expiresAtMs) {
+          busySlots.add(Number(o.slotIndex || 1));
+        }
+      });
+      $('activeSlotsLabel').textContent = `${busySlots.size} / 30 Busy`;
+
+      let slotHtml = '';
+      for (let i = 1; i <= 30; i++) {
+        const isBusy = busySlots.has(i);
+        const label = '.' + String(i).padStart(2, '0');
+        slotHtml += `
+          <div class="px-2 py-1.5 rounded-lg border text-center mono text-xs font-bold ${
+            isBusy
+              ? 'bg-amber-500/20 border-amber-400/50 text-amber-300'
+              : 'bg-[#080e1d] border-[#1e2d4a] text-emerald-400'
+          }">
+            ${label}
+          </div>`;
+      }
+      $('slotRadarGrid').innerHTML = slotHtml;
+
+      // Per-app revenue breakdown
+      if (apps.length === 0 && orders.length === 0) {
+        $('appRevenueMiniList').innerHTML = `<div class="text-xs text-slate-500 py-6 text-center">No applications registered yet.</div>`;
+      } else {
+        const map = {};
+        apps.forEach((a) => {
+          map[a.id] = { name: a.name, revenue: 0, successCount: 0, totalCount: 0 };
+        });
+        orders.forEach((o) => {
+          const key = o.appId || o.appName || 'Default';
+          if (!map[key]) map[key] = { name: o.appName || 'Merchant App', revenue: 0, successCount: 0, totalCount: 0 };
+          map[key].totalCount++;
+          if (o.status === 'SUCCESS') {
+            map[key].revenue += Number(o.payableAmount || 0);
+            map[key].successCount++;
+          }
+        });
+        $('appRevenueMiniList').innerHTML = Object.values(map).map((item) => `
+          <div class="p-3 rounded-xl bg-[#080e1d] border border-[#1e2d4a] flex items-center justify-between">
+            <div>
+              <div class="text-xs font-bold text-white">${item.name}</div>
+              <div class="text-[11px] text-slate-400">${item.successCount} verified / ${item.totalCount} total orders</div>
+            </div>
+            <div class="text-sm font-extrabold text-[#28c995] mono">${money(item.revenue)}</div>
+          </div>
+        `).join('');
+      }
+
+      // Gmail connection badge
+      const isConnected = Boolean(state.gmail && state.gmail.connected);
+      $('gmailState').innerHTML = isConnected
+        ? '<span class="w-2 h-2 rounded-full bg-[#28c995] pulse-dot"></span><span class="text-[#28c995]">Gmail Connected</span>'
+        : '<span class="w-2 h-2 rounded-full bg-rose-400"></span><span class="text-slate-300">Gmail Disconnected</span>';
+
+      $('gmailDetails').textContent = isConnected
+        ? 'Gmail read-only OAuth sync is active. Incoming Paytm Business emails are automatically verified when orders are polled or synced.'
+        : 'Gmail is not connected yet. Click "Connect Gmail" to authorize read-only access for Paytm transaction alerts.';
+
+      // Recent rows (Overview)
+      $('recentRows').innerHTML = orders.slice(0, 10).map((o) => `
+        <tr class="hover:bg-[#111a30] transition">
+          <td class="py-3 px-3.5 font-bold text-white mono">
+            <button type="button" onclick="copyTextGlobal('${o.orderId}', 'Order ID copied!')" class="hover:text-[#6d8cff] transition" title="Click to copy">${o.orderId}</button>
+          </td>
+          <td class="py-3 px-3.5 text-slate-200 font-medium">${o.appName || 'Merchant App'}</td>
+          <td class="py-3 px-3.5 text-slate-400 mono">${o.appOrderId || o.orderId}</td>
+          <td class="py-3 px-3.5">
+            <span class="font-bold text-white mono">${money(o.payableAmount)}</span>
+            <span class="text-[11px] text-[#6d8cff] ml-1">(Slot ${o.slotIndex || 1})</span>
+          </td>
+          <td class="py-3 px-3.5 mono text-emerald-300">${o.utr || o.transactionId || '—'}</td>
+          <td class="py-3 px-3.5"><span class="status-badge status-${o.status}">${o.status}</span></td>
+          <td class="py-3 px-3.5 text-slate-400">${dt(o.createdAtMs || o.createdAt)}</td>
+          <td class="py-3 px-3.5 text-right">
+            <button type="button" onclick="viewOrderQR('${o.orderId}')" class="px-2.5 py-1 rounded-lg bg-[#162340] hover:bg-[#6d8cff] text-slate-200 hover:text-white text-[11px] font-semibold transition">QR</button>
+          </td>
+        </tr>
+      `).join('') || '<tr><td colspan="8" class="py-8 text-center text-slate-500">No transactions recorded yet. Click "⚡ Test QR Order" above to create one!</td></tr>';
+
+      // Filtered Comprehensive Orders Table
+      const q = ($('orderSearch')?.value || '').toLowerCase();
+      const filter = $('orderStatus')?.value || '';
+      const filteredOrders = orders.filter((o) => (!filter || o.status === filter) && JSON.stringify(o).toLowerCase().includes(q));
+      $('filteredOrdersCount').textContent = `${filteredOrders.length} records`;
+
+      $('orderRows').innerHTML = filteredOrders.map((o) => `
+        <tr class="hover:bg-[#111a30] transition">
+          <td class="py-3 px-3 font-bold text-white mono">${o.orderId}</td>
+          <td class="py-3 px-3 text-slate-200">${o.appName || 'Merchant App'}</td>
+          <td class="py-3 px-3 text-slate-400 mono">${o.appOrderId || o.orderId}</td>
+          <td class="py-3 px-3 text-slate-300">${o.customerName || o.customerId || 'User'}</td>
+          <td class="py-3 px-3 text-slate-300 mono">${money(o.originalAmount || Math.floor(Number(o.payableAmount || 0)))}</td>
+          <td class="py-3 px-3 font-bold text-[#6d8cff] mono">${money(o.payableAmount)}</td>
+          <td class="py-3 px-3 text-slate-400 mono">Slot ${o.slotIndex || 1}</td>
+          <td class="py-3 px-3 font-bold text-[#28c995] mono">${o.utr || '—'}</td>
+          <td class="py-3 px-3"><span class="status-badge status-${o.status}">${o.status}</span></td>
+          <td class="py-3 px-3 text-slate-400">${dt(o.createdAtMs || o.createdAt)}</td>
+          <td class="py-3 px-3 text-slate-400">${dt(o.verifiedAtMs || o.verifiedAt)}</td>
+          <td class="py-3 px-3 text-right">
+            <button type="button" onclick="viewOrderQR('${o.orderId}')" class="px-2.5 py-1 rounded-lg bg-[#162340] hover:bg-[#6d8cff] text-white text-[11px] font-semibold transition">View QR</button>
+          </td>
+        </tr>
+      `).join('') || '<tr><td colspan="12" class="py-8 text-center text-slate-500">No matching orders found</td></tr>';
+
+      // Applications Cards
+      $('appList').innerHTML = apps.map((a) => `
+        <div class="glass-panel rounded-2xl p-5 flex flex-col justify-between space-y-4">
+          <div>
+            <div class="flex items-start justify-between gap-2">
+              <div>
+                <div class="flex items-center gap-2">
+                  <h3 class="text-base font-extrabold text-white">${a.name}</h3>
+                  ${a.active !== false
+                    ? '<span class="status-badge status-SUCCESS">ACTIVE</span>'
+                    : '<span class="status-badge status-EXPIRED">DISABLED</span>'}
+                </div>
+                <div class="text-[11px] text-slate-400 mt-1 mono">App ID: ${a.id} · Created ${dt(a.createdAt)}</div>
+              </div>
+            </div>
+
+            <div class="mt-4 space-y-2 text-xs">
+              <div class="p-2.5 rounded-xl bg-[#070b16] border border-[#1e2d4a] flex items-center justify-between">
+                <span class="text-slate-400">API Key Hint:</span>
+                <code class="text-[#28c995] font-semibold">${a.apiKeyHint || 'vex_••••'}</code>
+              </div>
+
+              <div class="p-2.5 rounded-xl bg-[#070b16] border border-[#1e2d4a] flex items-center justify-between gap-2">
+                <span class="text-slate-400 shrink-0">Webhook Secret:</span>
+                <div class="flex items-center gap-2 min-w-0">
+                  <code class="text-amber-300 truncate">${a.webhookSecret || 'Hidden'}</code>
+                  ${a.webhookSecret ? `<button type="button" onclick="copyTextGlobal('${a.webhookSecret}', 'Webhook Secret copied!')" class="px-2 py-0.5 rounded bg-[#162340] hover:bg-[#6d8cff] text-white text-[10px] shrink-0">Copy</button>` : ''}
+                </div>
+              </div>
+
+              <div class="p-2.5 rounded-xl bg-[#070b16] border border-[#1e2d4a] flex items-center justify-between gap-2">
+                <span class="text-slate-400 shrink-0">Webhook URL:</span>
+                <code class="text-slate-300 truncate">${a.webhookUrl || 'Not configured'}</code>
+              </div>
+            </div>
+          </div>
+
+          <div class="pt-3 border-t border-[#1e2d4a] flex flex-wrap gap-2">
+            <button type="button" onclick="editWebhook('${a.id}')" class="px-3 py-1.5 rounded-lg bg-[#162340] hover:bg-[#22355e] text-slate-200 text-xs font-semibold transition">✏️ Edit Webhook</button>
+            <button type="button" onclick="toggleApp('${a.id}', ${a.active === false})" class="px-3 py-1.5 rounded-lg bg-[#162340] hover:bg-[#22355e] text-slate-200 text-xs font-semibold transition">${a.active !== false ? '⏸ Disable' : '▶ Enable'}</button>
+            <button type="button" onclick="rotateCredentials('${a.id}')" class="px-3 py-1.5 rounded-lg bg-[#162340] hover:bg-[#22355e] text-amber-300 text-xs font-semibold transition">🔄 Rotate Keys</button>
+            <button type="button" onclick="deleteApp('${a.id}')" class="px-3 py-1.5 rounded-lg bg-rose-950/70 hover:bg-rose-600 text-rose-200 hover:text-white border border-rose-500/30 text-xs font-semibold transition ml-auto">🗑 Delete</button>
+          </div>
+        </div>
+      `).join('') || '<div class="lg:col-span-2 glass-panel rounded-2xl p-8 text-center text-slate-400">No applications registered yet. Click "＋ Register New App" to create your first API key.</div>';
+
+      // Webhook Events Table
+      $('eventRows').innerHTML = events.slice(0, 50).map((e) => {
+        const eventId = e.eventId || e.id;
+        const appId = e.appId || e.app_id || '—';
+        const status = e.deliveryStatus || e.delivery_status || e.status || 'DELIVERED';
+        const time = e.dispatchedAt || e.dispatched_at || e.createdAt || e.timestamp;
+        return `
+          <tr class="hover:bg-[#111a30] transition">
+            <td class="py-3 px-3.5 font-bold text-white mono">${eventId}</td>
+            <td class="py-3 px-3.5 text-[#6d8cff] mono">${e.type || 'payment.success'}</td>
+            <td class="py-3 px-3.5 text-slate-300 mono">${appId}</td>
+            <td class="py-3 px-3.5 text-slate-300 mono">${e.orderId || '—'}</td>
+            <td class="py-3 px-3.5 text-white font-semibold mono">${e.amount ? money(e.amount) : '—'}</td>
+            <td class="py-3 px-3.5"><span class="status-badge status-${status}">${status}</span></td>
+            <td class="py-3 px-3.5 text-slate-400">${dt(time)}</td>
+          </tr>
+        `;
+      }).join('') || '<tr><td colspan="7" class="py-8 text-center text-slate-500">No webhook dispatches recorded yet</td></tr>';
+
+      // Activity Logs
+      $('logList').innerHTML = logs.slice(0, 50).map((l) => `
+        <div class="p-3.5 rounded-xl bg-[#080e1d] border border-[#1e2d4a] flex items-center justify-between gap-4">
+          <div class="flex items-center gap-3">
+            <span class="w-2 h-2 rounded-full ${l.type === 'success' ? 'bg-[#28c995]' : l.type === 'warning' ? 'bg-amber-400' : 'bg-[#6d8cff]'}"></span>
+            <span class="text-xs font-semibold text-slate-200">${l.message}</span>
+          </div>
+          <span class="text-[11px] text-slate-400 mono shrink-0">${dt(l.at)}</span>
+        </div>
+      `).join('') || '<div class="py-8 text-center text-slate-500 text-xs">No activity logs yet</div>';
+    }
+
+    function switchPage(name) {
+      ['overview', 'orders', 'apps', 'events', 'logs', 'settings'].forEach((p) => {
+        const sec = $('page-' + p);
+        if (sec) sec.classList.toggle('hidden', p !== name);
+      });
+      document.querySelectorAll('[data-page]').forEach((b) => {
+        b.classList.toggle('active', b.dataset.page === name);
+      });
+      const titles = {
+        overview: 'Dashboard Overview',
+        orders: 'Orders & Transactions',
+        apps: 'Applications & API Keys',
+        events: 'Webhook Dispatches',
+        logs: 'System Activity Logs',
+        settings: 'Gateway Settings'
+      };
+      $('title').textContent = titles[name] || 'Dashboard Overview';
+    }
+
+    document.querySelectorAll('[data-page]').forEach((b) => {
+      b.addEventListener('click', () => switchPage(b.dataset.page));
+    });
+
+    $('viewAllOrdersBtn').addEventListener('click', () => switchPage('orders'));
+    $('quickAddAppBtn').addEventListener('click', () => {
+      switchPage('apps');
+      openCreateAppModal();
+    });
+
+    $('openDocsBtn').addEventListener('click', () => {
+      try { window.open('/docs.html', '_blank'); } catch (_) {}
+    });
+
+    $('mobileMenuBtn').addEventListener('click', () => {
+      $('sidebarNav').classList.toggle('hidden');
+    });
+
+    $('connectBtn').onclick = $('connectBtn2').onclick = () => {
+      window.location.href = '/auth/google';
+    };
+
+    async function runManualSync(btn) {
+      const orig = btn.textContent;
+      btn.textContent = '↻ Syncing...';
+      btn.disabled = true;
+      try {
+        await fetch(apiUrl('/api/sync')).catch(() => {});
+        await refresh();
+        showToast('Gmail inbox synced & orders updated!');
+      } finally {
+        btn.textContent = orig;
+        btn.disabled = false;
+      }
+    }
+
+    $('syncBtn').addEventListener('click', () => runManualSync($('syncBtn')));
+    $('manualSyncSettingsBtn').addEventListener('click', () => runManualSync($('manualSyncSettingsBtn')));
+
+    $('orderSearch').addEventListener('input', render);
+    $('orderStatus').addEventListener('change', render);
+
+    document.querySelectorAll('.copy-pill').forEach((btn) => {
+      btn.addEventListener('click', () => copyToClipboard(btn.getAttribute('data-copy-text'), 'Endpoint copied!'));
+    });
+
+    window.closeModal = () => $('modal').classList.add('hidden');
+
+    // CREATE APP MODAL
+    function openCreateAppModal() {
       $('modalContent').innerHTML = `
-        <h2>Application Created!</h2>
-        <p class="muted small">Copy these credentials now. Store them in your client app's environment variables:</p>
-        <label class="small muted">API Key</label>
-        <div class="keybox">${d.apiKey}</div>
-        <button onclick="navigator.clipboard.writeText('${d.apiKey}'); alert('API Key copied!');">Copy API Key</button>
-
-        <label class="small muted" style="margin-top:12px; display:block;">Webhook Secret</label>
-        <div class="keybox">${d.webhookSecret}</div>
-        <button class="secondary" onclick="navigator.clipboard.writeText('${d.webhookSecret}'); alert('Webhook Secret copied!');">Copy Webhook Secret</button>
-
-        <div style="margin-top:16px;">
-          <button class="secondary" onclick="closeModal(); refresh();">Done</button>
+        <div class="flex items-center justify-between border-b border-[#1e2d4a] pb-3">
+          <h2 class="text-lg font-extrabold text-white">Register New Application</h2>
+          <button type="button" onclick="closeModal()" class="text-slate-400 hover:text-white text-sm">✕</button>
+        </div>
+        <p class="text-xs text-slate-400">Generate a dedicated API Key and Webhook Secret for your website or Flutter app.</p>
+        <div class="space-y-3">
+          <div>
+            <label class="block text-xs text-slate-300 mb-1">Application Name *</label>
+            <input id="newName" type="text" placeholder="e.g. Esports Hub Flutter App" class="w-full px-3.5 py-2.5 rounded-xl bg-[#070b16] border border-[#27395c] text-xs text-white focus:outline-none focus:border-[#6d8cff]" />
+          </div>
+          <div>
+            <label class="block text-xs text-slate-300 mb-1">Webhook URL (Optional)</label>
+            <input id="newHook" type="text" placeholder="https://your-domain.com/api/webhook/vexpay" class="w-full px-3.5 py-2.5 rounded-xl bg-[#070b16] border border-[#27395c] text-xs text-white focus:outline-none focus:border-[#6d8cff]" />
+          </div>
+        </div>
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" onclick="closeModal()" class="px-4 py-2 rounded-xl bg-[#162340] text-slate-300 text-xs font-semibold">Cancel</button>
+          <button type="button" id="createAppBtn" class="px-4 py-2 rounded-xl bg-[#6d8cff] hover:bg-[#5879ff] text-white text-xs font-bold">Create App &amp; Keys</button>
         </div>
       `;
-      refresh();
-    } catch(e) { alert(e.message); }
-  };
-};
+      $('modal').classList.remove('hidden');
 
-window.editWebhook = async (appId) => {
-  const a = state.apps.find(x => x.id === appId);
-  const u = prompt('Enter new Webhook URL:', a?.webhookUrl || '');
-  if (u === null) return;
-  try {
-    await api('/api/admin/apps/' + appId + '/webhook', { method: 'PUT', body: JSON.stringify({ webhookUrl: u.trim() }) });
+      $('createAppBtn').onclick = async () => {
+        const nameVal = $('newName').value.trim();
+        const hookVal = $('newHook').value.trim();
+        if (!nameVal) {
+          showToast('Please enter an application name', true);
+          return;
+        }
+        try {
+          const d = await api('/api/admin/apps', {
+            method: 'POST',
+            body: JSON.stringify({ name: nameVal, webhookUrl: hookVal })
+          });
+          $('modalContent').innerHTML = `
+            <div class="border-b border-[#1e2d4a] pb-3">
+              <h2 class="text-lg font-extrabold text-[#28c995]">✅ Application Created!</h2>
+              <p class="text-xs text-slate-400 mt-0.5">Copy your API Key now — you can paste it directly into your app or AI prompt.</p>
+            </div>
+            <div class="space-y-3 text-xs">
+              <div>
+                <label class="block text-slate-400 mb-1">Merchant API Key (x-vex-api-key)</label>
+                <div class="p-3 rounded-xl bg-[#060a14] border border-[#28c995]/40 text-[#28c995] mono break-all">${d.apiKey}</div>
+                <button type="button" onclick="copyTextGlobal('${d.apiKey}', 'API Key copied!')" class="mt-1.5 px-3 py-1.5 rounded-lg bg-[#28c995] text-[#060a14] font-bold text-xs">📋 Copy API Key</button>
+              </div>
+              <div>
+                <label class="block text-slate-400 mb-1">Webhook Secret</label>
+                <div class="p-3 rounded-xl bg-[#060a14] border border-[#1e2d4a] text-amber-300 mono break-all">${d.webhookSecret}</div>
+                <button type="button" onclick="copyTextGlobal('${d.webhookSecret}', 'Webhook Secret copied!')" class="mt-1.5 px-3 py-1.5 rounded-lg bg-[#162340] text-white font-semibold text-xs">Copy Webhook Secret</button>
+              </div>
+            </div>
+            <div class="flex justify-end pt-2">
+              <button type="button" onclick="closeModal(); refresh();" class="px-5 py-2 rounded-xl bg-[#6d8cff] text-white text-xs font-bold">Done</button>
+            </div>
+          `;
+          refresh();
+        } catch (e) {
+          showToast(e.message, true);
+        }
+      };
+    }
+
+    $('addApp').addEventListener('click', openCreateAppModal);
+
+    // TEST QR ORDER GENERATOR MODAL
+    $('testOrderBtn').addEventListener('click', () => {
+      $('modalContent').innerHTML = `
+        <div class="flex items-center justify-between border-b border-[#1e2d4a] pb-3">
+          <h2 class="text-lg font-extrabold text-white">⚡ Generate Live Test QR Order</h2>
+          <button type="button" onclick="closeModal()" class="text-slate-400 hover:text-white text-sm">✕</button>
+        </div>
+        <p class="text-xs text-slate-400">Paste your App API Key to generate a live slotted UPI QR right here.</p>
+        <div class="space-y-3 text-xs">
+          <div>
+            <label class="block text-slate-300 mb-1">App API Key (x-vex-api-key)</label>
+            <input id="testApiKeyInput" type="text" placeholder="vex_..." class="w-full px-3 py-2 rounded-xl bg-[#070b16] border border-[#27395c] text-white mono" />
+          </div>
+          <div class="grid grid-cols-2 gap-2.5">
+            <div>
+              <label class="block text-slate-300 mb-1">Base Amount (₹)</label>
+              <input id="testAmtInput" type="number" min="1" value="1" class="w-full px-3 py-2 rounded-xl bg-[#070b16] border border-[#27395c] text-white" />
+            </div>
+            <div>
+              <label class="block text-slate-300 mb-1">Customer Name</label>
+              <input id="testUserInput" type="text" value="Rajan" class="w-full px-3 py-2 rounded-xl bg-[#070b16] border border-[#27395c] text-white" />
+            </div>
+          </div>
+        </div>
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" onclick="closeModal()" class="px-4 py-2 rounded-xl bg-[#162340] text-slate-300 text-xs font-semibold">Cancel</button>
+          <button type="button" id="runTestOrderBtn" class="px-4 py-2 rounded-xl bg-[#28c995] text-[#060a14] text-xs font-extrabold">Generate Live QR</button>
+        </div>
+      `;
+      $('modal').classList.remove('hidden');
+
+      $('runTestOrderBtn').onclick = async () => {
+        const key = $('testApiKeyInput').value.trim();
+        const amt = Number($('testAmtInput').value || 1);
+        const usr = $('testUserInput').value.trim() || 'Rajan';
+        if (!key) {
+          showToast('Please enter your App API Key (vex_...)', true);
+          return;
+        }
+        try {
+          const r = await fetch(apiUrl('/api/v1/orders'), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'x-vex-api-key': key },
+            body: JSON.stringify({
+              amount: amt,
+              app_order_id: 'DASH_' + Date.now(),
+              customer_id: usr,
+              customer_name: usr
+            })
+          });
+          const d = await r.json();
+          if (!r.ok || !d.success) throw new Error(d.error || 'Failed to create order');
+          await refresh();
+          viewOrderQR(d.order.orderId);
+        } catch (e) {
+          showToast(e.message, true);
+        }
+      };
+    });
+
+    // EDIT WEBHOOK MODAL
+    window.editWebhook = (appId) => {
+      const a = state.apps.find((x) => x.id === appId);
+      $('modalContent').innerHTML = `
+        <div class="flex items-center justify-between border-b border-[#1e2d4a] pb-3">
+          <h2 class="text-base font-extrabold text-white">Edit Webhook URL — ${a ? a.name : appId}</h2>
+          <button type="button" onclick="closeModal()" class="text-slate-400 hover:text-white text-sm">✕</button>
+        </div>
+        <div>
+          <label class="block text-xs text-slate-300 mb-1">Webhook Endpoint URL</label>
+          <input id="editHookInput" type="text" value="${a?.webhookUrl || ''}" placeholder="https://your-server.com/api/webhook/vexpay" class="w-full px-3.5 py-2.5 rounded-xl bg-[#070b16] border border-[#27395c] text-xs text-white" />
+        </div>
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" onclick="closeModal()" class="px-4 py-2 rounded-xl bg-[#162340] text-slate-300 text-xs font-semibold">Cancel</button>
+          <button type="button" id="saveHookBtn" class="px-4 py-2 rounded-xl bg-[#6d8cff] text-white text-xs font-bold">Save Webhook</button>
+        </div>
+      `;
+      $('modal').classList.remove('hidden');
+
+      $('saveHookBtn').onclick = async () => {
+        try {
+          await api('/api/admin/apps/' + appId + '/webhook', {
+            method: 'PUT',
+            body: JSON.stringify({ webhookUrl: $('editHookInput').value.trim() })
+          });
+          closeModal();
+          showToast('Webhook URL updated!');
+          refresh();
+        } catch (e) {
+          showToast(e.message, true);
+        }
+      };
+    };
+
+    window.toggleApp = async (appId, active) => {
+      try {
+        await api('/api/admin/apps/' + appId + '/status', {
+          method: 'PUT',
+          body: JSON.stringify({ active })
+        });
+        showToast(active ? 'Application enabled!' : 'Application disabled!');
+        refresh();
+      } catch (e) {
+        showToast(e.message, true);
+      }
+    };
+
+    window.rotateCredentials = (appId) => {
+      const a = state.apps.find((x) => x.id === appId);
+      $('modalContent').innerHTML = `
+        <div class="border-b border-[#1e2d4a] pb-3">
+          <h2 class="text-base font-extrabold text-amber-400">🔄 Rotate API Key &amp; Secret?</h2>
+          <p class="text-xs text-slate-300 mt-1">Old credentials for <strong>${a ? a.name : appId}</strong> will stop working immediately.</p>
+        </div>
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" onclick="closeModal()" class="px-4 py-2 rounded-xl bg-[#162340] text-slate-300 text-xs font-semibold">Cancel</button>
+          <button type="button" id="confirmRotateBtn" class="px-4 py-2 rounded-xl bg-amber-500 text-[#060a14] text-xs font-extrabold">Yes, Rotate Keys</button>
+        </div>
+      `;
+      $('modal').classList.remove('hidden');
+
+      $('confirmRotateBtn').onclick = async () => {
+        try {
+          const d = await api('/api/admin/apps/' + appId + '/rotate-credentials', { method: 'POST', body: '{}' });
+          $('modalContent').innerHTML = `
+            <h2 class="text-base font-extrabold text-[#28c995]">New Credentials Generated</h2>
+            <div class="space-y-3 text-xs">
+              <div>
+                <label class="block text-slate-400 mb-1">New API Key</label>
+                <div class="p-3 rounded-xl bg-[#060a14] border border-[#28c995]/40 text-[#28c995] mono break-all">${d.apiKey}</div>
+                <button type="button" onclick="copyTextGlobal('${d.apiKey}', 'New API Key copied!')" class="mt-1.5 px-3 py-1.5 rounded-lg bg-[#28c995] text-[#060a14] font-bold">Copy API Key</button>
+              </div>
+              <div>
+                <label class="block text-slate-400 mb-1">New Webhook Secret</label>
+                <div class="p-3 rounded-xl bg-[#060a14] border border-[#1e2d4a] text-amber-300 mono break-all">${d.webhookSecret}</div>
+                <button type="button" onclick="copyTextGlobal('${d.webhookSecret}', 'Webhook Secret copied!')" class="mt-1.5 px-3 py-1.5 rounded-lg bg-[#162340] text-white font-semibold">Copy Secret</button>
+              </div>
+            </div>
+            <div class="flex justify-end pt-2">
+              <button type="button" onclick="closeModal(); refresh();" class="px-4 py-2 rounded-xl bg-[#6d8cff] text-white text-xs font-bold">Done</button>
+            </div>
+          `;
+          refresh();
+        } catch (e) {
+          showToast(e.message, true);
+        }
+      };
+    };
+
+    window.deleteApp = (appId) => {
+      const a = state.apps.find((x) => x.id === appId);
+      $('modalContent').innerHTML = `
+        <div class="border-b border-[#1e2d4a] pb-3">
+          <h2 class="text-base font-extrabold text-rose-400">🗑 Delete Application?</h2>
+          <p class="text-xs text-slate-300 mt-1">Are you sure you want to permanently delete <strong>${a ? a.name : appId}</strong> and revoke its API key?</p>
+        </div>
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" onclick="closeModal()" class="px-4 py-2 rounded-xl bg-[#162340] text-slate-300 text-xs font-semibold">Cancel</button>
+          <button type="button" id="confirmDeleteAppBtn" class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold">Delete Permanently</button>
+        </div>
+      `;
+      $('modal').classList.remove('hidden');
+
+      $('confirmDeleteAppBtn').onclick = async () => {
+        try {
+          await api('/api/admin/apps/' + appId, { method: 'DELETE' });
+          closeModal();
+          showToast('Application deleted successfully!');
+          refresh();
+        } catch (e) {
+          showToast(e.message, true);
+        }
+      };
+    };
+
+    window.viewOrderQR = (orderId) => {
+      const o = state.orders.find((x) => x.orderId === orderId);
+      if (!o) return;
+      $('modalContent').innerHTML = `
+        <div class="flex items-center justify-between border-b border-[#1e2d4a] pb-3">
+          <div>
+            <h2 class="text-base font-extrabold text-white">Order Payment QR</h2>
+            <div class="text-[11px] text-slate-400 mono">${o.orderId} · Slot ${o.slotIndex || 1}</div>
+          </div>
+          <span class="status-badge status-${o.status}">${o.status}</span>
+        </div>
+        <div class="text-center space-y-3 py-2">
+          <div class="text-xs text-slate-400">Pay Exact Slotted Amount:</div>
+          <div class="text-3xl font-black text-[#28c995] mono">₹${o.payableAmount}</div>
+          <img src="${o.qrImageUrl}" alt="UPI QR Code" class="mx-auto w-56 h-56 bg-white p-2.5 rounded-2xl shadow-lg" />
+          <div class="p-2.5 rounded-xl bg-[#060a14] border border-[#1e2d4a] text-[11px] text-slate-300 mono break-all">${o.upiIntentUrl}</div>
+        </div>
+        <div class="flex justify-end gap-2">
+          <button type="button" onclick="copyTextGlobal('${o.upiIntentUrl}', 'UPI Link copied!')" class="px-3.5 py-2 rounded-xl bg-[#162340] text-white text-xs font-semibold">Copy UPI Link</button>
+          <button type="button" onclick="closeModal()" class="px-4 py-2 rounded-xl bg-[#6d8cff] text-white text-xs font-bold">Close</button>
+        </div>
+      `;
+      $('modal').classList.remove('hidden');
+    };
+
+    $('csvBtn').addEventListener('click', async () => {
+      try {
+        const r = await fetch(apiUrl('/api/orders.csv'), { headers: { 'x-dashboard-admin-key': adminKey } });
+        const blob = await r.blob();
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'vex-pay-orders.csv';
+        a.click();
+        showToast('Orders CSV downloaded!');
+      } catch (e) {
+        showToast(e.message, true);
+      }
+    });
+
+    loadCachedState();
     refresh();
-  } catch(e) { alert(e.message); }
-};
-
-window.toggleApp = async (appId, active) => {
-  try {
-    await api('/api/admin/apps/' + appId + '/status', { method: 'PUT', body: JSON.stringify({ active }) });
-    refresh();
-  } catch(e) { alert(e.message); }
-};
-
-window.rotateCredentials = async (appId) => {
-  const a = state.apps.find(x => x.id === appId);
-  if (!a || !confirm(`Rotate credentials for ${a.name}? The old API key and webhook secret will stop working immediately.`)) return;
-  try {
-    const d = await api('/api/admin/apps/' + appId + '/rotate-credentials', { method: 'POST', body: '{}' });
-    $('modalContent').innerHTML = `
-      <h2>New Credentials Generated</h2>
-      <p class="muted small">Update your server configuration with the new keys immediately:</p>
-      <label class="small muted">New API Key</label>
-      <div class="keybox">${d.apiKey}</div>
-      <button onclick="navigator.clipboard.writeText('${d.apiKey}'); alert('Copied API Key!');">Copy API Key</button>
-
-      <label class="small muted" style="margin-top:12px; display:block;">New Webhook Secret</label>
-      <div class="keybox">${d.webhookSecret}</div>
-      <button class="secondary" onclick="navigator.clipboard.writeText('${d.webhookSecret}'); alert('Copied Webhook Secret!');">Copy Webhook Secret</button>
-
-      <div style="margin-top:16px;">
-        <button class="secondary" onclick="closeModal(); refresh();">Done</button>
-      </div>
-    `;
-    $('modal').classList.remove('hidden');
-    refresh();
-  } catch(e) { alert(e.message); }
-};
-
-window.deleteApp = async (appId) => {
-  const a = state.apps.find(x => x.id === appId);
-  if (!a || !confirm(`Are you sure you want to delete ${a.name}? Its API key will be revoked immediately.`)) return;
-  try {
-    await api('/api/admin/apps/' + appId, { method: 'DELETE' });
-    refresh();
-    alert('Application deleted successfully.');
-  } catch(e) { alert(e.message); }
-};
-
-window.closeModal = () => $('modal').classList.add('hidden');
-
-window.viewOrderQR = (orderId) => {
-  const o = state.orders.find(x => x.orderId === orderId);
-  if (!o) return;
-  $('modalContent').innerHTML = `
-    <h2>Order Payment QR</h2>
-    <div style="text-align:center; margin:16px 0;">
-      <div style="font-size:24px; font-weight:800; color:#6d8cff;">Exact: ₹${o.payableAmount}</div>
-      <div class="muted small">Slot ${o.slotIndex || 1} · Order: ${o.orderId}</div>
-      <img src="${o.qrImageUrl}" class="qr-modal-img" alt="QR Code" />
-      <div class="keybox" style="font-size:11px; margin-top:10px;">${o.upiIntentUrl}</div>
-    </div>
-    <button class="secondary" onclick="closeModal()" style="width:100%;">Close</button>
-  `;
-  $('modal').classList.remove('hidden');
-};
-
-$('csvBtn').onclick = async () => {
-  try {
-    const r = await fetch('/api/orders.csv', { headers: { 'x-dashboard-admin-key': adminKey } });
-    const blob = await r.blob();
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'vex-pay-orders.csv';
-    a.click();
-  } catch(e) { alert(e.message); }
-};
-
-// Start Instant Cache
-loadCachedState();
-refresh();
-setInterval(refresh, 10000);
-</script>
+    setInterval(refresh, 8000);
+  </script>
 </body>
 </html>
